@@ -1,0 +1,363 @@
+---
+/**
+ * Home Page
+ *
+ * Implements Prompt 7: Home Page Panels and First-Time Reveal
+ * - Hero section with fullscreen video, role rotator, social icons
+ * - Intro/Contact section with reveal animations
+ * - Selected Work bento grid (1 large + 4 small tiles)
+ * - Footer with social icons and copyright
+ */
+
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import { getImage } from "../lib/images";
+import HoverPreviewVideo from "../components/HoverPreviewVideo.astro";
+import SelectedWork from "../components/SelectedWork.astro";
+
+// Get home config
+const siteEntries = await getCollection("site");
+const homeEntry = siteEntries.find((entry) => entry.id === "home");
+const home = homeEntry?.data as {
+	heroVideoPath?: string;
+	heroVideoPoster?: string;
+	roles?: string[];
+	introParagraph?: string;
+	email?: string;
+	socialLinks?: Array<{
+		platform: "instagram" | "youtube" | "linkedin";
+		url: string;
+	}>;
+};
+
+// Get poster image if available
+const posterImage = home?.heroVideoPoster
+	? getImage(home.heroVideoPoster)
+	: null;
+---
+
+<Layout title="Michael Omole | Filmmaker & Creative Director" overlayNav={true}>
+	<main class="home-scroll-snap">
+		<!-- ============================================
+             HERO SECTION
+             ============================================ -->
+		<section class="hero">
+			<!-- Background Video -->
+			<div class="hero__video-container">
+				{
+					home?.heroVideoPath && (
+						<video
+							class="hero__video"
+							autoplay
+							muted
+							loop
+							playsinline
+							poster={posterImage?.src}
+							data-hero-video
+						>
+							<source src={home.heroVideoPath} type="video/mp4" />
+						</video>
+					)
+				}
+				{/* Fallback poster for reduced motion or video failure */}
+				{
+					posterImage && (
+						<Image
+							src={posterImage}
+							alt="Hero background"
+							class="hero__poster"
+							widths={[1200, 1920, 2560]}
+							sizes="100vw"
+						/>
+					)
+				}
+			</div>
+
+			<!-- Hero Content -->
+			<div class="hero__content">
+				<h1 class="hero__title">Michael Omole</h1>
+				<p class="hero__role" data-role-rotator>
+					{home?.roles?.[0] ?? "FILM DIRECTOR"}
+				</p>
+			</div>
+		</section>
+
+		<!-- ============================================
+             INTRO / CONTACT SECTION
+             ============================================ -->
+		<section class="intro">
+			<div class="ui-container">
+				<div class="intro__content">
+					<p class="intro__paragraph" data-reveal>
+						{home?.introParagraph ?? "Welcome to my portfolio."}
+					</p>
+
+					<div
+						class="intro__contact"
+						data-reveal
+						data-reveal-delay="150"
+					>
+						<p class="ui-label mb-2">Get in touch</p>
+						<a
+							href={`mailto:${home?.email ?? "hello@example.com"}`}
+							class="intro__email"
+						>
+							{home?.email ?? "hello@example.com"}
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<!-- ============================================
+             SELECTED WORK SECTION
+             ============================================ -->
+	<SelectedWork />
+
+	<div class="actions-footer">
+		<a href="/film" class="btn-link"
+			>[ <span data-glitch-text>See All Films</span> ]</a
+		>
+	</div>
+</Layout>
+
+<style>
+	/* =========================================
+       HERO SECTION
+       ========================================= */
+
+	.hero {
+		position: relative;
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+	}
+
+	.hero__video-container {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+
+	.hero__video {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.hero__poster {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		z-index: -1;
+	}
+
+	/* Show poster when video is paused or not playing */
+	.hero__video:not([data-playing]) + .hero__poster {
+		z-index: 1;
+	}
+
+	.hero__content {
+		position: relative;
+		z-index: 2;
+		text-align: center;
+		padding: var(--space-xl);
+	}
+
+	.hero__title {
+		font-size: clamp(2.5rem, 8vw, 5rem);
+		font-weight: 400;
+		font-family: Georgia, "Times New Roman", serif;
+		letter-spacing: 0.02em;
+		line-height: 1.1;
+		margin-bottom: 0.75rem;
+	}
+
+	.hero__role {
+		font-size: clamp(0.75rem, 2vw, 1rem);
+		font-weight: 300;
+		letter-spacing: 0.5em; /* Wide spacing like D I R E C T O R */
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	/* Reduced motion: hide video, show poster */
+	@media (prefers-reduced-motion: reduce) {
+		.hero__video {
+			display: none;
+		}
+		.hero__poster {
+			z-index: 0 !important;
+		}
+	}
+
+	/* =========================================
+       INTRO SECTION
+       ========================================= */
+
+	.intro {
+		min-height: 65vh;
+		display: flex;
+		align-items: center;
+	}
+
+	/* On desktop, add left padding to clear the overlay sidebar */
+	@media (min-width: 1024px) {
+		.intro {
+			padding-left: 220px; /* Sidebar width (200px) + extra space */
+		}
+	}
+
+	.intro__content {
+		max-width: 42rem;
+	}
+
+	.intro__paragraph {
+		font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+		line-height: 1.7;
+		margin-bottom: var(--space-xl);
+		white-space: pre-line;
+	}
+
+	.intro__email {
+		font-size: 1.125rem;
+		transition: opacity 0.2s ease;
+	}
+
+	.intro__email:hover {
+		opacity: 0.7;
+	}
+
+	/* Actions Footer */
+	.actions-footer {
+		min-height: 100vh;
+		min-height: 100svh;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		background: transparent;
+	}
+
+	.btn-link {
+		color: #fff;
+		text-decoration: none;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		font-size: 1.75rem;
+		transition: opacity 0.2s ease;
+	}
+
+	.btn-link:hover {
+		opacity: 0.7;
+	}
+</style>
+
+<script>
+	import { initRoleRotator } from "../scripts/role-rotator";
+	import { scrambleTo } from "../scripts/scramble";
+	import "../scripts/reveal";
+
+	function setupGlitchEffect() {
+		const glitchBtn = document.querySelector<HTMLElement>(".btn-link");
+		const glitchText =
+			glitchBtn?.querySelector<HTMLElement>("[data-glitch-text]");
+
+		if (glitchBtn && glitchText) {
+			const originalText = glitchText.textContent || "SEE ALL FILMS";
+			let glitchInterval: number | undefined;
+
+			// Clear any existing listeners to prevent duplicates if re-running
+			const newBtn = glitchBtn.cloneNode(true) as HTMLElement;
+			glitchBtn.parentNode?.replaceChild(newBtn, glitchBtn);
+
+			// Re-select text/btn after clone
+			const freshBtn = document.querySelector<HTMLElement>(".btn-link");
+			const freshText =
+				freshBtn?.querySelector<HTMLElement>("[data-glitch-text]");
+
+			if (freshBtn && freshText) {
+				freshBtn.addEventListener("mouseenter", () => {
+					// Trigger immediately
+					scrambleTo(freshText, originalText, {
+						duration: 400,
+						steps: 10,
+						revealDelay: 0.05,
+					});
+
+					// Trigger every 3.5s while covered
+					glitchInterval = window.setInterval(() => {
+						scrambleTo(freshText, originalText, {
+							duration: 400,
+							steps: 10,
+							revealDelay: 0.05,
+						});
+					}, 3500);
+				});
+
+				freshBtn.addEventListener("mouseleave", () => {
+					if (glitchInterval) {
+						clearInterval(glitchInterval);
+						glitchInterval = undefined;
+					}
+				});
+			}
+		}
+	}
+
+	// Initialize role rotator
+	document.addEventListener("DOMContentLoaded", () => {
+		const roleElement = document.querySelector<HTMLElement>(
+			"[data-role-rotator]",
+		);
+		if (roleElement) {
+			// Get roles from home.json (passed via data attribute or inline)
+			const roles = ["FILM DIRECTOR", "WRITER", "CREATIVE DIRECTOR"];
+			initRoleRotator(roleElement, roles);
+		}
+
+		// Handle video autoplay failure
+		const video =
+			document.querySelector<HTMLVideoElement>("[data-hero-video]");
+		if (video) {
+			video.play().catch(() => {
+				// Autoplay blocked, poster will show
+				console.debug("Hero video autoplay prevented");
+			});
+
+			// Track playing state for poster fallback
+			video.addEventListener("playing", () => {
+				video.setAttribute("data-playing", "true");
+			});
+			video.addEventListener("pause", () => {
+				video.removeAttribute("data-playing");
+			});
+		}
+
+		// Button Glitch Effect
+		setupGlitchEffect();
+	});
+
+	// Re-init on Astro page transitions
+	document.addEventListener("astro:page-load", () => {
+		const roleElement = document.querySelector<HTMLElement>(
+			"[data-role-rotator]",
+		);
+		if (roleElement) {
+			const roles = ["FILM DIRECTOR", "WRITER", "CREATIVE DIRECTOR"];
+			initRoleRotator(roleElement, roles);
+		}
+
+		// Button Glitch Effect
+		setupGlitchEffect();
+	});
+</script>

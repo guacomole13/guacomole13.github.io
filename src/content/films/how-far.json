@@ -1,0 +1,61 @@
+{
+    "title": "How Far?",
+    "slug": "how-far",
+    "date": "2026-02-01",
+    "type": "Short Film",
+    "youtubeId": "xuJl7MpG9Oc",
+    "duration": "14 min",
+    "synopsis": "Two Nigerian immigrants, an ocean apart in location and status, find love over the phone. Visually depicted in one room, their connection defies physical distance. While at first their chemistry is easy, the challenges of being in a new nation threaten to break their relationship apart--before it really begins. ",
+    "roles": [
+        "Director",
+        "Writer",
+        "Editor"
+    ],
+    "thumbnailKey": "films/how-far/how-far-thumbnail.webp",
+    "posterKey": "films/how-far/how-far-poster.webp",
+    "previewMp4": "/video/films/how-far-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/how-far/how-far-still-01.webp",
+            "alt": "How Far? still 1"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-03.webp",
+            "alt": "How Far? still 3"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-04.webp",
+            "alt": "How Far? still 4"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-05.webp",
+            "alt": "How Far? still 5"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-06.webp",
+            "alt": "How Far? still 6"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-07.webp",
+            "alt": "How Far? still 7"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-08.webp",
+            "alt": "How Far? still 8"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-09.webp",
+            "alt": "How Far? still 9"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-10.webp",
+            "alt": "How Far? still 10"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-11.webp",
+            "alt": "How Far? still 11"
+        }
+    ],
+    "homeFeaturedOrder": 1,
+    "indexTile": "large"
+}

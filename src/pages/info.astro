@@ -1,0 +1,313 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { getImage } from "../lib/images";
+import { Image } from "astro:assets";
+
+// Get info config
+const siteEntries = await getCollection("site");
+const infoEntry = siteEntries.find((entry) => entry.id === "info");
+const info = infoEntry?.data as
+    | {
+          artistImageKey?: string;
+          artistImageAlt?: string;
+          bio?: string;
+          contact?: {
+              email: string;
+              buttonLabel: string;
+              mailtoSubject?: string;
+          };
+          platforms?: { label: string; url: string }[];
+      }
+    | undefined;
+
+// Resolve artist image
+const artistImage = info?.artistImageKey ? getImage(info.artistImageKey) : null;
+---
+
+<Layout title="Info | Michael Omole">
+    <div class="info-page-container">
+        <div class="info-grid">
+            <!-- LEFT COLUMN: ARTIST IMAGE -->
+            <div class="info-col">
+                <div class="info-tile h-full">
+                    <div class="info-tile__header">
+                        <span class="info-tile__index">01</span>
+                        <span class="info-tile__title">ARTIST</span>
+                    </div>
+                    <div class="info-tile__media">
+                        {
+                            artistImage ? (
+                                <Image
+                                    src={artistImage}
+                                    alt={
+                                        info?.artistImageAlt ?? "Michael Omole"
+                                    }
+                                    class="w-full h-full object-cover"
+                                    style="object-position: 51.06% 50%"
+                                    widths={[400, 800, 1200]}
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
+                                />
+                            ) : (
+                                <div class="flex items-center justify-center w-full h-full bg-zinc-900 text-zinc-500 text-xs uppercase tracking-widest">
+                                    Image not found
+                                </div>
+                            )
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: DETAILS -->
+            <div class="info-col flex flex-col">
+                <!-- BIO -->
+                <div class="info-tile flex-1">
+                    <div class="info-tile__header">
+                        <span class="info-tile__index">02</span>
+                        <span class="info-tile__title">BIO</span>
+                    </div>
+                    <div class="info-tile__content">
+                        <div
+                            class="prose prose-invert max-w-none text-sm leading-relaxed whitespace-pre-line text-zinc-300"
+                        >
+                            {
+                                info?.bio ??
+                                    "Bio not configured. Edit src/content/site/info.json"
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTACT -->
+                <div class="info-tile">
+                    <div class="info-tile__header">
+                        <span class="info-tile__index">03</span>
+                        <span class="info-tile__title">CONTACT</span>
+                    </div>
+                    <div
+                        class="info-tile__content flex flex-col items-center justify-center text-center h-full"
+                    >
+                        {
+                            info?.contact ? (
+                                <div class="flex flex-col items-center">
+                                    <p class="text-xs uppercase tracking-widest text-zinc-500 mb-4">
+                                        Email: {info.contact.email}
+                                    </p>
+                                    <a
+                                        href={`mailto:${info.contact.email}${info.contact.mailtoSubject ? `?subject=${encodeURIComponent(info.contact.mailtoSubject)}` : ""}`}
+                                        class="platform-link inline-block px-8 py-2 border border-white/20 hover:border-white hover:bg-white hover:text-black transition-colors text-xs uppercase tracking-widest"
+                                    >
+                                        <span data-glitch-text>
+                                            {info.contact.buttonLabel}
+                                        </span>
+                                    </a>
+                                </div>
+                            ) : (
+                                <p class="text-zinc-500 text-xs uppercase tracking-widest">
+                                    Contact info not configured
+                                </p>
+                            )
+                        }
+                    </div>
+                </div>
+
+                <!-- PLATFORMS -->
+                <div class="info-tile">
+                    <div class="info-tile__header">
+                        <span class="info-tile__index">04</span>
+                        <span class="info-tile__title">PLATFORMS</span>
+                    </div>
+                    <div class="info-tile__content">
+                        {
+                            info?.platforms && info.platforms.length > 0 ? (
+                                <ul class="grid grid-cols-2 gap-4">
+                                    {info.platforms.map((platform) => (
+                                        <li>
+                                            <a
+                                                href={platform.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="platform-link block text-base text-center text-zinc-300 hover:text-white transition-colors"
+                                            >
+                                                <span data-glitch-text>
+                                                    {platform.label}
+                                                </span>
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p class="text-zinc-500 text-xs uppercase tracking-widest">
+                                    No platforms configured
+                                </p>
+                            )
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { createGlitchWave } from "../scripts/scramble";
+
+    function setupPlatformGlitches() {
+        const links = document.querySelectorAll(".platform-link");
+
+        links.forEach((link) => {
+            // Avoid double binding
+            if (link.hasAttribute("data-glitch-bound")) return;
+
+            const textElement =
+                link.querySelector<HTMLElement>("[data-glitch-text]");
+            if (!textElement) return;
+
+            const originalText = textElement.textContent || "";
+            let stopWave: (() => void) | null = null;
+
+            link.addEventListener("mouseenter", () => {
+                if (stopWave) stopWave();
+                stopWave = createGlitchWave(textElement, originalText, {
+                    duration: 300,
+                });
+            });
+
+            link.addEventListener("mouseleave", () => {
+                if (stopWave) {
+                    stopWave();
+                    stopWave = null;
+                }
+            });
+
+            link.setAttribute("data-glitch-bound", "true");
+        });
+    }
+
+    // Initial load
+    setupPlatformGlitches();
+
+    // View transitions
+    document.addEventListener("astro:page-load", setupPlatformGlitches);
+</script>
+
+<style>
+    /* Container aligns with site max-width but manages its own padding for the broken grid look */
+    .info-page-container {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem; /* Adjust padding to match site flow */
+    }
+
+    /* 2-Column Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0; /* Gaps handled by negative margins */
+        background: transparent;
+    }
+
+    @media (min-width: 1024px) {
+        .info-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    /* Column Wrapper */
+    .info-col {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* =========================================
+       INFO TILE - Matches FilmTile Aesthetic
+       ========================================= */
+
+    .info-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+
+        /* Overlap borders to ensure 1px visual width */
+        margin: -1px 0 0 -1px;
+        /* Width/Height compensation for overlap - implicitly handled by flex/grid flow usually, 
+           but padding ensures content doesn't touch borders. */
+
+        background-color: #000;
+        padding: 10px; /* Inset content by 10px matches FilmTile */
+
+        /* Broken Grid Borders: White lines that don't touch at corners */
+        background-image:
+            linear-gradient(to right, white, white),
+            /* Top */ linear-gradient(to bottom, white, white),
+            /* Right */ linear-gradient(to left, white, white),
+            /* Bottom */ linear-gradient(to top, white, white); /* Left */
+
+        background-size:
+            calc(100% - 24px) 1px,
+            /* Top: width - gaps, 1px height */ 1px calc(100% - 24px),
+            /* Right: 1px width, height - gaps */ calc(100% - 24px) 1px,
+            /* Bottom: width - gaps, 1px height */ 1px calc(100% - 24px); /* Left: 1px width, height - gaps */
+
+        background-position:
+            center top,
+            right center,
+            center bottom,
+            left center;
+
+        background-repeat: no-repeat;
+    }
+
+    /* Header */
+    .info-tile__header {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0.5rem; /* Slightly tighter than film tile to fit content */
+        margin-bottom: 0.5rem;
+        background-color: #000;
+        border-bottom: 1px solid rgba(255, 255, 255, 1); /* Internal separator line matches design */
+    }
+
+    .info-tile__index {
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: #71717a; /* zinc-500 */
+    }
+
+    .info-tile__title {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+    }
+
+    /* Media container - full bleed within the padding */
+    .info-tile__media {
+        flex: 1;
+        position: relative;
+        width: 100%;
+        min-height: 400px; /* Min height for image on mobile */
+        background: #18181b;
+        overflow: hidden;
+    }
+
+    /* Content Area */
+    .info-tile__content {
+        padding: 1rem 0.5rem;
+        flex: 1;
+    }
+
+    /* Ensure full height on desktop for the image column */
+    @media (min-width: 1024px) {
+        .info-tile.h-full {
+            height: calc(100% + 1px); /* Slight adjustment for margin overlap */
+        }
+
+        /* Adjust background sizes for larger tiles if needed, 
+           or keep standard relative sizing */
+    }
+</style>

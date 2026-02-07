@@ -1,0 +1,7 @@
+# Robots.txt for michaelomole.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://michaelomole.com/sitemap-index.xml

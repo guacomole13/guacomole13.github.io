@@ -1,0 +1,247 @@
+---
+import "../styles/global.css";
+import DesktopNav from "../components/nav/DesktopNav.astro";
+import MobileHeader from "../components/nav/MobileHeader.astro";
+import MobileMenu from "../components/nav/MobileMenu.astro";
+import Footer from "../components/Footer.astro";
+import Starfield from "../components/Starfield.astro";
+import {
+    SITE_NAME,
+    SITE_URL,
+    DEFAULT_OG_IMAGE,
+    generatePersonSchema,
+    type SEOProps,
+    type OpenGraphProps,
+    type TwitterCardProps,
+} from "../lib/seo";
+
+interface Props {
+    title: string;
+    description?: string;
+    /** Canonical URL override (defaults to current page URL) */
+    canonical?: string;
+    /** OpenGraph metadata */
+    openGraph?: Partial<OpenGraphProps>;
+    /** Twitter Card metadata */
+    twitter?: Partial<TwitterCardProps>;
+    /** JSON-LD structured data (added alongside Person schema) */
+    jsonLd?: object | object[];
+    /** If true, sidebar overlays content instead of taking up space (for fullscreen hero) */
+    overlayNav?: boolean;
+    /** If true, hide the site-wide footer (for pages with custom footer) */
+    hideFooter?: boolean;
+}
+
+const {
+    title,
+    description = "Portfolio of Michael Omole - Filmmaker and Creative Director",
+    canonical,
+    openGraph,
+    twitter,
+    jsonLd,
+    overlayNav = false,
+    hideFooter = false,
+} = Astro.props;
+
+// Get current pathname for nav active state
+const pathname = Astro.url.pathname;
+
+// Compute canonical URL
+const canonicalURL = canonical || new URL(pathname, SITE_URL).href;
+
+// OpenGraph defaults
+const ogTitle = openGraph?.title || title;
+const ogDescription = openGraph?.description || description;
+const ogUrl = openGraph?.url || canonicalURL;
+const ogImage = openGraph?.image || DEFAULT_OG_IMAGE;
+const ogType = openGraph?.type || "website";
+
+// Twitter Card defaults
+const twitterCard = twitter?.card || "summary_large_image";
+const twitterTitle = twitter?.title || ogTitle;
+const twitterDescription = twitter?.description || ogDescription;
+const twitterImage = twitter?.image || ogImage;
+
+// JSON-LD: Always include Person schema, optionally add page-specific schema
+const personSchema = generatePersonSchema();
+const allSchemas = jsonLd
+    ? Array.isArray(jsonLd)
+        ? [personSchema, ...jsonLd]
+        : [personSchema, jsonLd]
+    : [personSchema];
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content={description} />
+        <meta name="theme-color" content="#000000" />
+
+        <!-- Canonical URL -->
+        <link rel="canonical" href={canonicalURL} />
+
+        <!-- OpenGraph -->
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:url" content={ogUrl} />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:type" content={ogType} />
+        <meta
+            property="og:image"
+            content={ogImage.startsWith("http")
+                ? ogImage
+                : `${SITE_URL}${ogImage}`}
+        />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content={twitterCard} />
+        <meta name="twitter:title" content={twitterTitle} />
+        <meta name="twitter:description" content={twitterDescription} />
+        <meta
+            name="twitter:image"
+            content={twitterImage.startsWith("http")
+                ? twitterImage
+                : `${SITE_URL}${twitterImage}`}
+        />
+
+        <!-- JSON-LD Structured Data -->
+        {
+            allSchemas.map((schema) => (
+                <script
+                    type="application/ld+json"
+                    set:html={JSON.stringify(schema)}
+                />
+            ))
+        }
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+        <title>{title}</title>
+    </head>
+
+    <body class="min-h-screen">
+        <Starfield />
+        <!-- Mobile Navigation (shown < lg) -->
+        <div
+            class:list={[
+                "mobile-nav-wrapper",
+                { "mobile-nav--overlay": overlayNav },
+            ]}
+        >
+            <MobileHeader />
+            <MobileMenu pathname={pathname} />
+        </div>
+
+        <!-- Desktop Layout with Sidebar -->
+        <div
+            class:list={[
+                "desktop-layout",
+                { "desktop-layout--overlay": overlayNav },
+            ]}
+        >
+            <!-- Desktop Sidebar (shown >= lg) -->
+            <aside
+                class:list={[
+                    "desktop-sidebar",
+                    { "desktop-sidebar--overlay": overlayNav },
+                ]}
+            >
+                <DesktopNav pathname={pathname} />
+            </aside>
+
+            <!-- Main Content -->
+            <main
+                class:list={[
+                    "main-content",
+                    { "main-content--fullwidth": overlayNav },
+                ]}
+            >
+                <slot />
+            </main>
+        </div>
+
+        <!-- Site-wide Footer (fixed position) -->
+        {!hideFooter && <Footer />}
+
+        <!-- Mobile Scripts (only load on client) -->
+        <script src="../scripts/mobile-header.ts"></script>
+        <script src="../scripts/mobile-menu.ts"></script>
+    </body>
+</html>
+
+<style>
+    /* Mobile Navigation Wrapper */
+    .mobile-nav-wrapper {
+        display: block;
+    }
+
+    /* Desktop Layout */
+    .desktop-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Desktop Sidebar */
+    .desktop-sidebar {
+        display: none;
+        width: 200px;
+        flex-shrink: 0;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        min-width: 0;
+        padding-top: 70px; /* Space for fixed mobile header */
+    }
+
+    /* =========================================
+       OVERLAY NAV MODE (for fullscreen hero)
+       ========================================= */
+
+    /* Mobile: overlay mode - nav sits on top of content */
+    .mobile-nav--overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+    }
+
+    /* Desktop: sidebar overlays content */
+    .desktop-sidebar--overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 100;
+    }
+
+    /* Main content takes full width when nav is overlay */
+    .main-content--fullwidth {
+        padding-top: 0;
+    }
+
+    /* Responsive: Desktop view */
+    @media (min-width: 1024px) {
+        .mobile-nav-wrapper {
+            display: none;
+        }
+
+        .desktop-sidebar {
+            display: block;
+        }
+
+        .main-content {
+            padding-top: 0;
+        }
+
+        /* In overlay mode, main content is full width */
+        .desktop-layout--overlay .main-content {
+            width: 100%;
+        }
+    }
+</style>

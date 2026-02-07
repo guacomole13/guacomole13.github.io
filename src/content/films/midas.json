@@ -1,0 +1,67 @@
+{
+    "title": "MIDAS",
+    "slug": "midas",
+    "date": "2024-04-15",
+    "type": "Music Video",
+    "youtubeId": "cc3G1U78A3w",
+    "duration": "4 min",
+    "synopsis": "Explores the intersection of growing up Ghanaian and American through striking choreography and cinematography.",
+    "roles": [
+        "Director",
+        "Editor"
+    ],
+    "thumbnailKey": "films/midas/midas-thumbnail.webp",
+    "previewMp4": "/video/films/midas-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/midas/midas-still-01.webp",
+            "alt": "MIDAS still 1"
+        },
+        {
+            "imageKey": "films/midas/midas-still-02.webp",
+            "alt": "MIDAS still 2"
+        },
+        {
+            "imageKey": "films/midas/midas-still-03.webp",
+            "alt": "MIDAS still 3"
+        },
+        {
+            "imageKey": "films/midas/midas-still-04.webp",
+            "alt": "MIDAS still 4"
+        },
+        {
+            "imageKey": "films/midas/midas-still-05.webp",
+            "alt": "MIDAS still 5"
+        },
+        {
+            "imageKey": "films/midas/midas-still-06.webp",
+            "alt": "MIDAS still 6"
+        },
+        {
+            "imageKey": "films/midas/midas-still-07.webp",
+            "alt": "MIDAS still 7"
+        },
+        {
+            "imageKey": "films/midas/midas-still-08.webp",
+            "alt": "MIDAS still 8"
+        },
+        {
+            "imageKey": "films/midas/midas-still-09.webp",
+            "alt": "MIDAS still 9"
+        },
+        {
+            "imageKey": "films/midas/midas-still-10.webp",
+            "alt": "MIDAS still 10"
+        },
+        {
+            "imageKey": "films/midas/midas-still-11.webp",
+            "alt": "MIDAS still 11"
+        },
+        {
+            "imageKey": "films/midas/midas-still-13.webp",
+            "alt": "MIDAS still 13"
+        }
+    ],
+    "homeFeaturedOrder": 2,
+    "indexTile": "large"
+}

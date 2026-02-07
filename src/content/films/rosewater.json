@@ -1,0 +1,43 @@
+{
+    "title": "Rosewater",
+    "slug": "rosewater",
+    "date": "2024-08-01",
+    "type": "Short Film",
+    "youtubeId": "ImSPvpj8vqI",
+    "duration": "4 min",
+    "synopsis": "A man reflects on his relationships using the water's mirror.",
+    "roles": [
+        "Director"
+    ],
+    "thumbnailKey": "films/rosewater/rosewater-thumbnail.webp",
+    "posterKey": "films/rosewater/rosewater-poster.webp",
+    "previewMp4": "/video/films/rosewater-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/rosewater/rosewater-still-01.webp",
+            "alt": "Rosewater still 1"
+        },
+        {
+            "imageKey": "films/rosewater/rosewater-still-03.webp",
+            "alt": "Rosewater still 3"
+        },
+        {
+            "imageKey": "films/rosewater/rosewater-still-04.webp",
+            "alt": "Rosewater still 4"
+        },
+        {
+            "imageKey": "films/rosewater/rosewater-still-05.webp",
+            "alt": "Rosewater still 5"
+        },
+        {
+            "imageKey": "films/rosewater/rosewater-still-07.webp",
+            "alt": "Rosewater still 7"
+        },
+        {
+            "imageKey": "films/rosewater/rosewater-still-08.webp",
+            "alt": "Rosewater still 8"
+        }
+    ],
+    "homeFeaturedOrder": 4,
+    "indexTile": "small"
+}

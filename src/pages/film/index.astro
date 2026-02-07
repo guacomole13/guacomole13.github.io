@@ -1,0 +1,141 @@
+---
+/**
+ * Film Index Page
+ *
+ * Tim Flower-inspired bento grid mosaic.
+ * - 4-column desktop, 2-column tablet, 1-column mobile
+ * - Default tile size pattern with per-film overrides
+ * - Content-first: no page header, grid fills the space
+ */
+import Layout from "../../layouts/Layout.astro";
+import FilmTile from "../../components/FilmTile.astro";
+import { getCollection } from "astro:content";
+
+// Get all films, sorted reverse-chronological
+const allFilms = await getCollection("films");
+const films = allFilms.sort(
+    (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+);
+
+// Default tile size pattern (repeats as needed)
+// Creates visual variety: hero → smalls → wide → hero cycle
+const TILE_PATTERN: Array<"small" | "wide" | "large"> = [
+    "large",
+    "small",
+    "small",
+    "small",
+    "small",
+    "wide",
+    "wide",
+    "large",
+    "small",
+    "small",
+    "small",
+    "small",
+    "large",
+];
+
+// Get tile size for a film (override or pattern)
+function getTileSize(
+    film: (typeof films)[0],
+    index: number,
+): "small" | "wide" | "large" {
+    if (film.data.indexTile) {
+        return film.data.indexTile;
+    }
+    return TILE_PATTERN[index % TILE_PATTERN.length];
+}
+---
+
+<Layout title="Film | Michael Omole">
+    <main class="film-index">
+        {
+            films.length > 0 ? (
+                <div class="film-grid-wrapper">
+                    <div class="film-grid">
+                        {films.map((film, index) => {
+                            const displayIndex = String(index + 1).padStart(
+                                2,
+                                "0",
+                            );
+                            const tileSize = getTileSize(film, index);
+
+                            return (
+                                <FilmTile
+                                    film={film}
+                                    displayIndex={displayIndex}
+                                    tileSize={tileSize}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
+            ) : (
+                <div class="empty-state">
+                    <p class="text-muted">
+                        No films yet. Add JSON files to src/content/films/
+                    </p>
+                </div>
+            )
+        }
+    </main>
+</Layout>
+
+<style>
+    /* =========================================
+       FILM INDEX - Tim Flower Bento Grid
+       ========================================= */
+
+    .film-index {
+        min-height: 100vh;
+    }
+
+    /* Wrapper clips outer edges so only internal lines show */
+    .film-grid-wrapper {
+        overflow: hidden;
+        margin: -1px;
+    }
+
+    /* Grid with 1px gap-masking for shared borders */
+    .film-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-auto-rows: 200px;
+        gap: 0;
+        grid-auto-flow: dense;
+        /* background removed */
+    }
+
+    /* Tablet: 2 columns */
+    @media (max-width: 1024px) {
+        .film-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-auto-rows: 180px;
+        }
+    }
+
+    /* Mobile: 1 column, taller tiles */
+    @media (max-width: 640px) {
+        .film-grid {
+            grid-template-columns: 1fr;
+            grid-auto-rows: 200px;
+        }
+
+        /* Reset spans for mobile - single column layout */
+        .film-grid :global(.sm\:col-span-2) {
+            grid-column: span 1;
+        }
+        .film-grid :global(.sm\:row-span-2) {
+            grid-row: span 1;
+        }
+    }
+
+    /* Empty state styling */
+    .empty-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 50vh;
+        padding: 2rem;
+    }
+</style>

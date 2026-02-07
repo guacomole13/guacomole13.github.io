@@ -1,0 +1,42 @@
+{
+    "title": "Crossover",
+    "slug": "crossover",
+    "date": "2025-01-20",
+    "type": "Short Film",
+    "youtubeId": "TEKT2EgcYZs",
+    "duration": "1 min",
+    "synopsis": "A girl encounters a ghost with a deadly dribble",
+    "roles": [
+        "Director",
+        "Editor"
+    ],
+    "thumbnailKey": "films/crossover/crossover-thumbnail.webp",
+    "previewMp4": "/video/films/crossover-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/crossover/crossover-still-01.webp",
+            "alt": "Crossover still 1"
+        },
+        {
+            "imageKey": "films/crossover/crossover-still-03.webp",
+            "alt": "Crossover still 3"
+        },
+        {
+            "imageKey": "films/crossover/crossover-still-04.webp",
+            "alt": "Crossover still 4"
+        },
+        {
+            "imageKey": "films/crossover/crossover-still-05.webp",
+            "alt": "Crossover still 5"
+        },
+        {
+            "imageKey": "films/crossover/crossover-still-06.webp",
+            "alt": "Crossover still 6"
+        },
+        {
+            "imageKey": "films/crossover/crossover-still-07.webp",
+            "alt": "Crossover still 7"
+        }
+    ],
+    "indexTile": "small"
+}

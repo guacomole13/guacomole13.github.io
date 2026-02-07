@@ -1,0 +1,59 @@
+{
+    "title": "Nameless Run",
+    "slug": "nameless-run",
+    "date": "2024-04-20",
+    "type": "Brand Content",
+    "instagramId": "DE5HQcMuUZe",
+    "duration": "> 1 min",
+    "synopsis": "The community and energy of a run club entrances a barista at the local coffee shop. ",
+    "roles": [
+        "Director",
+        "Editor",
+        "Writer"
+    ],
+    "thumbnailKey": "films/nameless-run/nameless-run-thumbnail.webp",
+    "previewMp4": "/video/films/nameless-run-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-01.webp",
+            "alt": "Nameless Run still 1"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-02.webp",
+            "alt": "Nameless Run still 2"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-03.webp",
+            "alt": "Nameless Run still 3"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-04.webp",
+            "alt": "Nameless Run still 4"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-05.webp",
+            "alt": "Nameless Run still 5"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-06.webp",
+            "alt": "Nameless Run still 6"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-07.webp",
+            "alt": "Nameless Run still 7"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-08.webp",
+            "alt": "Nameless Run still 8"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-09.webp",
+            "alt": "Nameless Run still 9"
+        },
+        {
+            "imageKey": "films/nameless-run/nameless-run-still-10.webp",
+            "alt": "Nameless Run still 10"
+        }
+    ],
+    "indexTile": "small"
+}

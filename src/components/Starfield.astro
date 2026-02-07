@@ -1,0 +1,412 @@
+---
+// src/components/Starfield.astro
+
+interface Props {
+    /**
+     * Speed multiplier. 1 = normal, 0.5 = half speed, etc.
+     * Default: 1
+     */
+    speed?: number;
+}
+
+const { speed = 1 } = Astro.props;
+
+const DEFAULT_COLORS = [
+    "#ffffff", // 60% White
+    "#e0f2fe", // 30% Cool White-Blue
+    "#ffedd5", // 10% Warm White-Orange
+];
+
+const VIBRANT_COLORS = [
+    "#5BC0EB", // Blue
+    "#FF8C61", // Orange
+    "#28502E", // Forest Green
+    "#E0CA3C", // Gold
+    "#3E2F5B", // Dark Purple
+];
+
+function getRandomBoxShadow(n: number, vibrantChance: number = 0): string {
+    let value = "";
+
+    for (let i = 0; i < n; i++) {
+        // Random position across the viewport
+        // We cover 2000px height for the seamless loop
+        const x = Math.floor(Math.random() * 2000);
+        const y = Math.floor(Math.random() * 2000);
+
+        // Color selection logic
+        let color;
+        // Chance to pick a vibrant color
+        if (Math.random() < vibrantChance) {
+            const vRand = Math.random();
+            const colorIndex = Math.floor(vRand * VIBRANT_COLORS.length);
+            color = VIBRANT_COLORS[colorIndex];
+        } else {
+            // Standard palette
+            const rand = Math.random();
+            if (rand < 0.6) {
+                color = DEFAULT_COLORS[0];
+            } else if (rand < 0.9) {
+                color = DEFAULT_COLORS[1];
+            } else {
+                color = DEFAULT_COLORS[2];
+            }
+        }
+
+        // Add original star
+        value += `${x}px ${y}px ${color}`;
+
+        // Add DUPLICATE star for seamless looping
+        // The duplicate is shifted down by exactly 2000px (the animation height)
+        value += `, ${x}px ${y + 2000}px ${color}`;
+
+        if (i < n - 1) {
+            value += ", ";
+        }
+    }
+    return value;
+}
+
+// Generate shadows for 3 layers
+// Fewer stars needed because we are doubling them in the helper
+// Split small stars into 3 groups to desynchronize their breathing
+// Generate shadows for 3 layers
+// Fewer stars needed because we are doubling them in the helper
+// Split small stars into 3 groups to desynchronize their breathing
+// Back layers (Tiny & Small) get 3% chance of vibrant colors
+const shadowsSmall1 = getRandomBoxShadow(178, 0.06); // Doubled from 89, chance doubled to 0.06
+const shadowsSmall2 = getRandomBoxShadow(178, 0.06); // Doubled from 89, chance doubled to 0.06
+const shadowsSmall3 = getRandomBoxShadow(158, 0.06); // Doubled from 79, chance doubled to 0.06
+
+// Front layers (Medium & Large) get 1% chance of vibrant colors
+const shadowsMedium = getRandomBoxShadow(140, 0.02); // Doubled from 70, chance doubled to 0.02
+const shadowsLarge = getRandomBoxShadow(70, 0.02); // Doubled from 35, chance doubled to 0.02
+
+// Tiny "Dust" Layer (Background)
+const shadowsTiny1 = getRandomBoxShadow(308, 0.06); // Doubled from 154, chance doubled to 0.06
+const shadowsTiny2 = getRandomBoxShadow(308, 0.06); // Doubled from 154, chance doubled to 0.06
+
+// Flash Layers (Single stars for instant twinkle)
+// Using single stars to create "randomly selected" feel with different loop times
+// Low vibrant chance because these should often be white/bright
+const shadowsFlash1 = getRandomBoxShadow(1, 0.02);
+const shadowsFlash2 = getRandomBoxShadow(1, 0.02);
+const shadowsFlash3 = getRandomBoxShadow(1, 0.02);
+const shadowsFlash4 = getRandomBoxShadow(1, 0.02);
+const shadowsFlash5 = getRandomBoxShadow(1, 0.02);
+
+function getShootingStars(count: number, vibrateChance: number) {
+    const stars = [];
+    for (let i = 0; i < count; i++) {
+        // Random position from top right 2/3 of the screen
+        const top = Math.floor(Math.random() * 66) + "%";
+        const right = Math.floor(Math.random() * 66) + "%";
+
+        let color = DEFAULT_COLORS[0];
+        if (Math.random() < vibrateChance) {
+            color =
+                VIBRANT_COLORS[
+                    Math.floor(Math.random() * VIBRANT_COLORS.length)
+                ];
+        } else {
+            const r = Math.random();
+            if (r < 0.6) color = DEFAULT_COLORS[0];
+            else if (r < 0.9) color = DEFAULT_COLORS[1];
+            else color = DEFAULT_COLORS[2];
+        }
+
+        // Distribute delays over 27.5s
+        const delay = Math.floor(Math.random() * 27.5) + "s";
+
+        stars.push({ top, right, color, delay });
+    }
+    return stars;
+}
+
+const shootingStarsBack = getShootingStars(2, 0.06);
+const shootingStarsMiddle = getShootingStars(2, 0.02);
+---
+
+<!-- 
+  Updated Layout: 
+  - using z-index -1 to ensure background layering
+  - Added explicit style fallback for position/size to be robust if Tailwind fails to load.
+-->
+<div
+    id="starfield"
+    class="fixed inset-0 overflow-hidden pointer-events-none"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--color-bg, #000000); z-index: -1;"
+>
+    <!-- Tiny Stars (Deep Background) -->
+    <div
+        class="star-layer layer-xs"
+        style={`box-shadow: ${shadowsTiny1}; animation-delay: 0s;`}
+    >
+    </div>
+    <div
+        class="star-layer layer-xs"
+        style={`box-shadow: ${shadowsTiny2}; animation-delay: -60s;`}
+    >
+    </div>
+
+    <!-- Small Stars (Slow) - Split into 3 sub-layers for localized twinkling -->
+    <div
+        class="star-layer layer-sm"
+        style={`box-shadow: ${shadowsSmall1}; animation-delay: 0s;`}
+    >
+    </div>
+
+    <!-- Shooting Stars (Back Layer) -->
+    {
+        shootingStarsBack.map((star) => (
+            <span
+                class="shooting-star"
+                style={`--top: ${star.top}; --right: ${star.right}; --color: ${star.color}; --delay: ${star.delay}; --size: 1px; --tail-length: 150px;`}
+            />
+        ))
+    }
+    <div
+        class="star-layer layer-sm"
+        style={`box-shadow: ${shadowsSmall2}; animation-delay: -45s;`}
+    >
+    </div>
+    <div
+        class="star-layer layer-sm"
+        style={`box-shadow: ${shadowsSmall3}; animation-delay: -90s;`}
+    >
+    </div>
+
+    <!-- Medium Stars (Medium) -->
+    <div class="star-layer layer-md" style={`box-shadow: ${shadowsMedium}`}>
+    </div>
+
+    <!-- Shooting Stars (Middle Layer) -->
+    {
+        shootingStarsMiddle.map((star) => (
+            <span
+                class="shooting-star"
+                style={`--top: ${star.top}; --right: ${star.right}; --color: ${star.color}; --delay: ${star.delay}; --size: 1.5px; --tail-length: 250px;`}
+            />
+        ))
+    }
+
+    <!-- Large Stars (Fast) -->
+    <div class="star-layer layer-lg" style={`box-shadow: ${shadowsLarge}`}>
+    </div>
+
+    <!-- Flash Stars (Instant Twinkle) -->
+    <!-- Prime number durations to create organic/random feel -->
+    <!-- Using CSS variable for duration to avoid overriding moveStars duration -->
+    <div
+        class="star-layer layer-flash"
+        style={`box-shadow: ${shadowsFlash1}; --flash-duration: 11s; animation-delay: -2s;`}
+    >
+    </div>
+    <div
+        class="star-layer layer-flash"
+        style={`box-shadow: ${shadowsFlash2}; --flash-duration: 13s; animation-delay: -5s;`}
+    >
+    </div>
+    <div
+        class="star-layer layer-flash"
+        style={`box-shadow: ${shadowsFlash3}; --flash-duration: 17s; animation-delay: -1s;`}
+    >
+    </div>
+    <div
+        class="star-layer layer-flash"
+        style={`box-shadow: ${shadowsFlash4}; --flash-duration: 19s; animation-delay: -8s;`}
+    >
+    </div>
+    <div
+        class="star-layer layer-flash"
+        style={`box-shadow: ${shadowsFlash5}; --flash-duration: 23s; animation-delay: -12s;`}
+    >
+    </div>
+</div>
+
+<style define:vars={{ speed }}>
+    /* Base Layer Animation */
+    .star-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1px;
+        height: 1px;
+        background: transparent;
+        opacity: 1;
+        will-change: transform;
+    }
+
+    /* Layer Specifics (Size & Speed) */
+    /* The duration is divided by speed prop to control global speed */
+    /* Extremely slow speeds for "barely noticeable" drift */
+
+    .layer-xs {
+        width: 1px;
+        height: 1px;
+        animation:
+            moveStars calc(1500s / var(--speed)) linear infinite,
+            breathe-xs 120s ease-in-out infinite alternate;
+    }
+
+    .layer-sm {
+        width: 1px;
+        height: 1px;
+        animation:
+            moveStars calc(500s / var(--speed)) linear infinite,
+            breathe-sm 135s ease-in-out infinite alternate;
+    }
+
+    .layer-md {
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        animation:
+            moveStars calc(750s / var(--speed)) linear infinite,
+            breathe-md 100s ease-in-out infinite alternate-reverse;
+    }
+
+    .layer-lg {
+        width: 3.75px; /* Increased by 25% from 3px */
+        height: 3.75px; /* Increased by 25% from 3px */
+        border-radius: 50%;
+        filter: blur(0.5px);
+        animation:
+            moveStars calc(1000s / var(--speed)) linear infinite,
+            breathe-lg 75s ease-in-out infinite alternate;
+    }
+
+    .layer-flash {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        animation:
+            moveStars calc(750s / var(--speed)) linear infinite,
+            flash var(--flash-duration, 10s) ease-in-out infinite;
+    }
+
+    /* Shooting Stars */
+    .shooting-star {
+        position: absolute;
+        top: var(--top);
+        right: var(--right);
+        width: var(--size);
+        height: var(--size);
+        background: var(--color);
+        border-radius: 50%;
+        box-shadow:
+            0 0 0 2px rgba(255, 255, 255, 0.08),
+            0 0 0 6px rgba(255, 255, 255, 0.08),
+            0 0 20px rgba(255, 255, 255, 0.08);
+        animation: shoot 27.5s linear infinite;
+        animation-delay: var(--delay);
+        opacity: 0;
+        /* No z-index, rely on DOM order for layering */
+    }
+    .shooting-star::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: var(--tail-length);
+        height: 1px;
+        background: linear-gradient(90deg, var(--color), transparent);
+    }
+    @keyframes shoot {
+        0% {
+            transform: rotate(315deg) translateX(0);
+            opacity: 1;
+        }
+        1.5% {
+            transform: rotate(315deg) translateX(-1000px);
+            opacity: 1;
+        }
+        1.6% {
+            transform: rotate(315deg) translateX(-1000px);
+            opacity: 0;
+        }
+        100% {
+            transform: rotate(315deg) translateX(-1000px);
+            opacity: 0;
+        }
+    }
+
+    /* 
+     Parallax Movement Loop
+     Moves exactly 2000px up. 
+     Since we have duplicated stars at y+2000, 
+     at -2000px the view is identical to 0px.
+    */
+    @keyframes moveStars {
+        from {
+            transform: translateY(0);
+        }
+        to {
+            transform: translateY(-2000px);
+        }
+    }
+
+    /* Breathing/Twinkle Effect - Specific per layer for different intensities */
+    /* Max opacity increased to 0.9, ranges increased by ~20% */
+    @keyframes breathe-xs {
+        0% {
+            opacity: 0.1;
+        }
+        100% {
+            opacity: 0.35;
+        }
+    }
+
+    /* Breathing/Twinkle Effect - Specific per layer for different intensities */
+    @keyframes breathe-sm {
+        0% {
+            opacity: 0.2;
+        }
+        100% {
+            opacity: 0.6;
+        }
+    }
+
+    @keyframes breathe-md {
+        0% {
+            opacity: 0.2;
+        }
+        100% {
+            opacity: 0.75;
+        }
+    }
+
+    @keyframes breathe-lg {
+        0% {
+            opacity: 0.2;
+        }
+        100% {
+            opacity: 0.9;
+        }
+    }
+
+    @keyframes flash {
+        0%,
+        90% {
+            opacity: 0.2; /* Normal visibility most of the time */
+            width: 3px;
+            height: 3px;
+        }
+        95% {
+            opacity: 1; /* Flash brightness */
+            width: 3.45px; /* 15% increase from 3px */
+            height: 3.45px;
+        }
+        100% {
+            opacity: 0.2;
+            width: 3px;
+            height: 3px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .star-layer {
+            animation: none;
+        }
+    }
+</style>

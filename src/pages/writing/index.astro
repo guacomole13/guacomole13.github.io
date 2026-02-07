@@ -1,0 +1,105 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all writing entries
+const allWriting = await getCollection('writing');
+
+// Featured items (sorted by featuredOrder)
+const featured = allWriting
+    .filter(item => item.data.featuredOrder !== undefined)
+    .sort((a, b) => (a.data.featuredOrder ?? 0) - (b.data.featuredOrder ?? 0));
+
+// All items sorted reverse-chronological for the index
+const indexed = allWriting.sort((a, b) => 
+    new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+
+// Format date as "MONTH YEAR"
+function formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+}
+---
+
+<Layout title="Writing | Michael Omole">
+    <main class="min-h-screen">
+        <!-- Featured Section -->
+        {featured.length > 0 && (
+            <section class="ui-container pt-20 pb-12">
+                <h2 class="ui-heading text-2xl mb-4">FEATURED</h2>
+                <hr class="ui-rule mb-8" />
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {featured.slice(0, 2).map((item) => (
+                        <a 
+                            href={item.data.externalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="ui-frame block group"
+                        >
+                            <div class="aspect-video bg-white/5 flex items-center justify-center">
+                                <span class="text-muted">[Cover Image]</span>
+                            </div>
+                            <div class="p-4 text-center">
+                                <h3 class="font-medium group-hover:underline">{item.data.title}</h3>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            </section>
+        )}
+        
+        <!-- Index Section -->
+        <section class="ui-container pb-20">
+            <h2 class="ui-heading text-2xl mb-4">INDEX</h2>
+            <hr class="ui-rule mb-8" />
+            
+            <!-- Column Headers -->
+            <div class="hidden md:grid grid-cols-12 gap-4 text-xs text-muted uppercase tracking-wider pb-2 border-b border-white/10">
+                <div class="col-span-1">##</div>
+                <div class="col-span-7">Title</div>
+                <div class="col-span-4 text-right">Date</div>
+            </div>
+            
+            <!-- Writing Rows -->
+            {indexed.length > 0 ? (
+                <div class="divide-y divide-white/10">
+                    {indexed.map((item, index) => {
+                        const displayIndex = String(index + 1).padStart(2, '0');
+                        return (
+                            <div class="py-4">
+                                <div class="grid grid-cols-12 gap-4 items-center">
+                                    <div class="col-span-2 md:col-span-1 text-muted text-sm">
+                                        {displayIndex}
+                                    </div>
+                                    <div class="col-span-10 md:col-span-7">
+                                        <h3 class="font-medium">{item.data.title}</h3>
+                                    </div>
+                                    <div class="hidden md:block col-span-4 text-right text-sm text-muted">
+                                        {formatDate(item.data.date)}
+                                    </div>
+                                </div>
+                                
+                                <!-- Expandable excerpt (placeholder - will be interactive in Prompt 8) -->
+                                <div class="mt-4 pl-8 md:pl-12 hidden" data-excerpt>
+                                    <p class="text-muted text-sm mb-4">{item.data.excerpt}</p>
+                                    <a 
+                                        href={item.data.externalUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="ui-label hover:text-white"
+                                    >
+                                        READ →
+                                    </a>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <p class="text-muted py-8">No writing entries yet. Add JSON files to src/content/writing/</p>
+            )}
+        </section>
+    </main>
+</Layout>

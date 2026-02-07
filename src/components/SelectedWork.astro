@@ -1,0 +1,141 @@
+---
+import { getCollection } from "astro:content";
+import WorkCard from "./WorkCard.astro";
+
+// Fetch and sort films
+const allFilms = await getCollection("films");
+const featuredFilms = allFilms
+    .filter((film) => film.data.homeFeaturedOrder !== undefined)
+    .sort(
+        (a, b) =>
+            (a.data.homeFeaturedOrder ?? 0) - (b.data.homeFeaturedOrder ?? 0),
+    )
+    .slice(0, 8); // Limit to 8 items max for the grid layout
+---
+
+<section class="selected-work">
+    <!-- Sidebar Label (Desktop only) -->
+    <div class="selected-work__sidebar">
+        <span class="vertical-text">SELECTED WORK</span>
+    </div>
+
+    <!-- Grid Container -->
+    <!-- gap-1 = 4px gap for borders -->
+    <!-- bg-zinc-800 = color of the borders showing through the gap -->
+    <div class="selected-work__grid">
+        {
+            featuredFilms.map((film, index) => {
+                // Determine grid classes based on index/position
+                let gridClass = "";
+
+                if (index === 0) {
+                    // Item 01: Hero - Spans 6 cols, 2 rows (on desktop)
+                    gridClass = "md:col-span-6 md:row-span-2";
+                } else if (index === 1 || index === 2) {
+                    // Item 02 & 03: Top Right - Span 3 cols each
+                    gridClass = "md:col-span-3";
+                } else if (index === 3 || index === 4) {
+                    // Item 04 & 05: Middle Right - Span 3 cols each
+                    gridClass = "md:col-span-3";
+                } else {
+                    // Item 06, 07, 08: Bottom Row - Span 4 cols each
+                    gridClass = "md:col-span-4";
+                }
+
+                return (
+                    <div class={`selected-work__item ${gridClass}`}>
+                        <WorkCard film={film.data} index={index} />
+                    </div>
+                );
+            })
+        }
+
+        <!-- Fill empty slots if needed (optional) -->
+        {
+            featuredFilms.length === 0 && (
+                <div class="p-8 text-white col-span-full">
+                    No featured films found.
+                </div>
+            )
+        }
+    </div>
+</section>
+
+<style>
+    .selected-work {
+        display: flex;
+        width: 100%;
+        /* Thick borders removed for broken grid aesthetic */
+    }
+
+    /* Sidebar */
+    .selected-work__sidebar {
+        display: none;
+        width: 3rem; /* w-12 */
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        justify-content: center;
+        background-color: #000;
+        z-index: 10; /* Ensure sidebar sits above grid lines if needed */
+        margin-right: -1px; /* Overlap with grid */
+
+        /* Broken Right Border */
+        background-image: linear-gradient(to bottom, white, white);
+        background-size: 1px calc(100% - 24px); /* 1px width, height minus gaps */
+        background-position: right center;
+        background-repeat: no-repeat;
+    }
+
+    @media (min-width: 1024px) {
+        .selected-work__sidebar {
+            display: flex;
+        }
+    }
+
+    .vertical-text {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transform: rotate(180deg);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        white-space: nowrap;
+    }
+
+    /* Grid */
+    .selected-work__grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr; /* Mobile: 1 col */
+        gap: 0; /* No gap, borders handled by items */
+        /* background-color removed */
+    }
+
+    @media (min-width: 768px) {
+        .selected-work__grid {
+            grid-template-columns: repeat(12, 1fr);
+            /* 
+         We don't need explicit row definitions if we rely on auto-placement 
+         and span classes, but can define min-heights if needed.
+      */
+            grid-auto-rows: minmax(280px, auto);
+        }
+    }
+
+    .selected-work__item {
+        background-color: #000;
+        /* Ensure content stretches */
+        display: flex;
+        flex-direction: column;
+        min-height: 300px; /* Minimum height for mobile/cards */
+    }
+
+    @media (min-width: 768px) {
+        .selected-work__item {
+            min-height: 0; /* Let grid control height */
+            height: 100%;
+        }
+    }
+</style>

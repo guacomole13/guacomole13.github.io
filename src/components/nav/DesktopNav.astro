@@ -1,0 +1,150 @@
+---
+/**
+ * DesktopNav Component
+ *
+ * Sticky left sidebar navigation for desktop viewports.
+ * Matches Figma design: [michael omole] with > FILM, > WRITING, > INFO
+ * - Home route "/": neutral state, all items same styling
+ * - Non-home routes: active section first and larger
+ */
+
+interface Props {
+    pathname: string;
+}
+
+const { pathname } = Astro.props;
+
+// Determine active section from pathname
+function getActiveSection(path: string): "film" | "info" | null {
+    if (path.startsWith("/film")) return "film";
+    // if (path.startsWith("/writing")) return "writing"; // Hidden until content is ready
+    if (path.startsWith("/info")) return "info";
+    return null; // Home page - neutral state
+}
+
+// Get nav items in correct order
+function getNavItems(active: string | null) {
+    const items = [
+        { id: "film", label: "FILM", href: "/film" },
+        // { id: "writing", label: "WRITING", href: "/writing" }, // Hidden until content is ready
+        { id: "info", label: "INFO", href: "/info" },
+    ];
+
+    if (!active) return items; // Home: default order
+
+    // Move active to front, keep relative order of others
+    const activeItem = items.find((item) => item.id === active)!;
+    const others = items.filter((item) => item.id !== active);
+    return [activeItem, ...others];
+}
+
+const activeSection = getActiveSection(pathname);
+const navItems = getNavItems(activeSection);
+const isHome = pathname === "/";
+---
+
+<nav class="nav-sidebar" aria-label="Main navigation">
+    <!-- Home link (logo/name) - [michael omole] style -->
+    <a href="/" class="nav-home-link"> [michael omole] </a>
+
+    <!-- Navigation links with > prefix -->
+    <ul class="nav-list">
+        {
+            navItems.map((item) => {
+                const isActive = item.id === activeSection;
+                return (
+                    <li>
+                        <a
+                            href={item.href}
+                            class:list={[
+                                "nav-link",
+                                { "nav-link-active": isActive && !isHome },
+                            ]}
+                            aria-current={
+                                isActive && !isHome ? "page" : undefined
+                            }
+                        >
+                            <span class="nav-arrow">&gt;</span>
+                            {item.label}
+                        </a>
+                    </li>
+                );
+            })
+        }
+    </ul>
+</nav>
+
+<style>
+    .nav-sidebar {
+        position: sticky;
+        top: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 2rem;
+        height: fit-content;
+    }
+
+    /* [michael omole] logo style */
+    .nav-home-link {
+        font-size: 1rem;
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        color: white;
+        text-decoration: none;
+        transition: opacity 0.2s;
+        text-transform: lowercase;
+    }
+
+    .nav-home-link:hover {
+        opacity: 0.7;
+    }
+
+    .nav-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-left: 0.5rem; /* Indent under the name */
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .nav-arrow {
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .nav-link:hover {
+        color: white;
+    }
+
+    .nav-link:hover .nav-arrow {
+        color: white;
+    }
+
+    .nav-link-active {
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    .nav-link-active .nav-arrow {
+        color: white;
+    }
+</style>

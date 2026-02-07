@@ -1,0 +1,422 @@
+---
+/**
+ * Lightbox - Fullscreen gallery overlay for stills
+ *
+ * Opens when user clicks a still in BentoGrid.
+ * Supports:
+ * - Arrow key navigation (desktop)
+ * - Swipe navigation (mobile)
+ * - ESC to close
+ * - Click backdrop to close
+ * - Focus trap when open
+ */
+
+import { getImage } from "../lib/images";
+import type { Still } from "../content.config";
+
+interface Props {
+    stills: Still[];
+}
+
+const { stills } = Astro.props;
+---
+
+<div
+    id="lightbox"
+    class="lightbox"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Image gallery"
+    aria-hidden="true"
+>
+    <!-- Backdrop -->
+    <div class="lightbox__backdrop" data-lightbox-close></div>
+
+    <!-- Close button -->
+    <button
+        type="button"
+        class="lightbox__close"
+        data-lightbox-close
+        aria-label="Close gallery"
+    >
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+        >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+    </button>
+
+    <!-- Navigation arrows -->
+    <button
+        type="button"
+        class="lightbox__nav lightbox__nav--prev"
+        data-lightbox-prev
+        aria-label="Previous image"
+    >
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+        >
+            <polyline points="15,18 9,12 15,6"></polyline>
+        </svg>
+    </button>
+
+    <button
+        type="button"
+        class="lightbox__nav lightbox__nav--next"
+        data-lightbox-next
+        aria-label="Next image"
+    >
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+        >
+            <polyline points="9,6 15,12 9,18"></polyline>
+        </svg>
+    </button>
+
+    <!-- Image container -->
+    <div class="lightbox__content">
+        {
+            stills.map((still, index) => {
+                const image = getImage(still.imageKey);
+                return (
+                    <div
+                        class="lightbox__slide"
+                        data-lightbox-slide={index}
+                        aria-hidden={index !== 0}
+                    >
+                        {image && (
+                            <img
+                                src={image.src}
+                                alt={still.alt}
+                                class="lightbox__image"
+                                loading="lazy"
+                            />
+                        )}
+                    </div>
+                );
+            })
+        }
+    </div>
+
+    <!-- Counter -->
+    <div class="lightbox__counter" aria-live="polite">
+        <span data-lightbox-current>1</span> / <span>{stills.length}</span>
+    </div>
+</div>
+
+<style>
+    .lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+            opacity 0.2s ease,
+            visibility 0.2s ease;
+    }
+
+    .lightbox[aria-hidden="false"] {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .lightbox__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.95);
+        cursor: pointer;
+    }
+
+    .lightbox__close {
+        position: absolute;
+        top: var(--space-lg);
+        right: var(--space-lg);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border: 1px solid var(--color-border);
+        background: transparent;
+        color: var(--color-text);
+        cursor: pointer;
+        transition: border-color 0.15s ease;
+    }
+
+    .lightbox__close:hover {
+        border-color: var(--color-border-strong);
+    }
+
+    .lightbox__close:focus-visible {
+        outline: 2px solid var(--color-text);
+        outline-offset: 2px;
+    }
+
+    .lightbox__nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border: 1px solid var(--color-border);
+        background: transparent;
+        color: var(--color-text);
+        cursor: pointer;
+        transition: border-color 0.15s ease;
+    }
+
+    .lightbox__nav:hover {
+        border-color: var(--color-border-strong);
+    }
+
+    .lightbox__nav:focus-visible {
+        outline: 2px solid var(--color-text);
+        outline-offset: 2px;
+    }
+
+    .lightbox__nav--prev {
+        left: var(--space-lg);
+    }
+
+    .lightbox__nav--next {
+        right: var(--space-lg);
+    }
+
+    .lightbox__content {
+        position: relative;
+        z-index: 5;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lightbox__slide {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-xl);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+    }
+
+    .lightbox__slide[aria-hidden="false"] {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .lightbox__image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .lightbox__counter {
+        position: absolute;
+        bottom: var(--space-lg);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        letter-spacing: 0.1em;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 767px) {
+        .lightbox__nav {
+            width: 40px;
+            height: 40px;
+        }
+
+        .lightbox__nav--prev {
+            left: var(--space-sm);
+        }
+
+        .lightbox__nav--next {
+            right: var(--space-sm);
+        }
+
+        .lightbox__slide {
+            padding: var(--space-md);
+        }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+        .lightbox,
+        .lightbox__slide {
+            transition: none;
+        }
+    }
+</style>
+
+<script>
+    /**
+     * Lightbox functionality
+     *
+     * Handles opening, closing, and navigation of the lightbox gallery.
+     * Supports keyboard navigation and touch swipe.
+     */
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const lightbox = document.getElementById("lightbox");
+        if (!lightbox) return;
+
+        const slides = lightbox.querySelectorAll<HTMLElement>(
+            "[data-lightbox-slide]",
+        );
+        const currentSpan = lightbox.querySelector<HTMLElement>(
+            "[data-lightbox-current]",
+        );
+        const closeButtons = lightbox.querySelectorAll("[data-lightbox-close]");
+        const prevButton = lightbox.querySelector("[data-lightbox-prev]");
+        const nextButton = lightbox.querySelector("[data-lightbox-next]");
+
+        let currentIndex = 0;
+        let previouslyFocused: HTMLElement | null = null;
+
+        // Touch swipe tracking
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        function showSlide(index: number) {
+            // Wrap around
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+
+            currentIndex = index;
+
+            slides.forEach((slide, i) => {
+                slide.setAttribute(
+                    "aria-hidden",
+                    i === index ? "false" : "true",
+                );
+            });
+
+            if (currentSpan) {
+                currentSpan.textContent = String(index + 1);
+            }
+        }
+
+        function openLightbox(index: number) {
+            previouslyFocused = document.activeElement as HTMLElement;
+            currentIndex = index;
+            showSlide(index);
+            lightbox.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+
+            // Focus the close button
+            (closeButtons[1] as HTMLElement)?.focus();
+        }
+
+        function closeLightbox() {
+            lightbox.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+
+            // Return focus
+            previouslyFocused?.focus();
+        }
+
+        // Open triggers from BentoGrid
+        document
+            .querySelectorAll("[data-lightbox-trigger]")
+            .forEach((trigger) => {
+                trigger.addEventListener("click", () => {
+                    const index = parseInt(
+                        (trigger as HTMLElement).dataset.lightboxIndex || "0",
+                        10,
+                    );
+                    openLightbox(index);
+                });
+            });
+
+        // Close buttons
+        closeButtons.forEach((btn) => {
+            btn.addEventListener("click", closeLightbox);
+        });
+
+        // Navigation
+        prevButton?.addEventListener("click", () =>
+            showSlide(currentIndex - 1),
+        );
+        nextButton?.addEventListener("click", () =>
+            showSlide(currentIndex + 1),
+        );
+
+        // Keyboard navigation
+        document.addEventListener("keydown", (e) => {
+            if (lightbox.getAttribute("aria-hidden") === "true") return;
+
+            switch (e.key) {
+                case "Escape":
+                    closeLightbox();
+                    break;
+                case "ArrowLeft":
+                    showSlide(currentIndex - 1);
+                    break;
+                case "ArrowRight":
+                    showSlide(currentIndex + 1);
+                    break;
+            }
+        });
+
+        // Touch swipe
+        lightbox.addEventListener(
+            "touchstart",
+            (e) => {
+                touchStartX = e.touches[0].clientX;
+            },
+            { passive: true },
+        );
+
+        lightbox.addEventListener(
+            "touchend",
+            (e) => {
+                touchEndX = e.changedTouches[0].clientX;
+                const diff = touchStartX - touchEndX;
+
+                // Minimum swipe distance
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        showSlide(currentIndex + 1); // Swipe left = next
+                    } else {
+                        showSlide(currentIndex - 1); // Swipe right = prev
+                    }
+                }
+            },
+            { passive: true },
+        );
+    });
+</script>

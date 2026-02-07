@@ -1,0 +1,212 @@
+---
+import { Image } from "astro:assets";
+import { getImage } from "../lib/images";
+import type { Film } from "../content.config";
+import HoverPreviewVideo from "./HoverPreviewVideo.astro";
+
+interface Props {
+    film: Film;
+    index: number;
+}
+
+const { film, index } = Astro.props;
+
+// Format index as "01", "02", etc.
+const indexStr = String(index + 1).padStart(2, "0");
+
+// Get images
+const thumbnail = film.thumbnailKey ? getImage(film.thumbnailKey) : null;
+const hasPreview = !!film.previewMp4;
+---
+
+<a href={`/film/${film.slug}`} class="work-card group">
+    <!-- Header inside the box -->
+    <div class="work-card__header">
+        <span class="work-card__index">{indexStr}</span>
+        <span class="work-card__title" data-glitch-text>{film.title}</span>
+        <span class="work-card__duration">
+            {film.duration ? film.duration : ""}
+        </span>
+    </div>
+
+    <!-- Media content -->
+    <div class="work-card__media">
+        {
+            hasPreview && thumbnail ? (
+                <HoverPreviewVideo
+                    src={film.previewMp4!}
+                    poster={thumbnail}
+                    alt={film.title}
+                    previewId={`home-${film.slug}`}
+                />
+            ) : thumbnail ? (
+                <Image
+                    src={thumbnail}
+                    alt={film.title}
+                    class="work-card__img"
+                    widths={[400, 800, 1200]}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+            ) : (
+                <div class="work-card__placeholder">
+                    <span>{film.type}</span>
+                </div>
+            )
+        }
+    </div>
+</a>
+
+<style>
+    .work-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+
+        /* Overlap borders to ensure 1px visual width */
+        width: calc(100% + 1px);
+        height: calc(100% + 1px);
+        margin: -1px 0 0 -1px; /* Pull left and up to overlap previous items */
+
+        background-color: transparent;
+        overflow: hidden;
+        padding: 10px; /* Inset content by 10px */
+
+        /* Broken Grid Borders: White lines that don't touch at corners */
+        background-image:
+            linear-gradient(to right, white, white),
+            /* Top */ linear-gradient(to bottom, white, white),
+            /* Right */ linear-gradient(to left, white, white),
+            /* Bottom */ linear-gradient(to top, white, white); /* Left */
+
+        background-size:
+            calc(100% - 24px) 1px,
+            /* Top: width - gaps, 1px height */ 1px calc(100% - 24px),
+            /* Right: 1px width, height - gaps */ calc(100% - 24px) 1px,
+            /* Bottom: width - gaps, 1px height */ 1px calc(100% - 24px); /* Left: 1px width, height - gaps */
+
+        background-position:
+            center top,
+            right center,
+            center bottom,
+            left center;
+
+        background-repeat: no-repeat;
+    }
+
+    /* Header: Top border is handled by grid gap, but we need separation from media */
+    .work-card__header {
+        flex-shrink: 0;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        /* border-bottom removed for broken grid aesthetic */
+        background-color: transparent;
+        z-index: 10;
+    }
+
+    .work-card__index {
+        font-family: monospace;
+        font-size: 0.75rem; /* text-xs */
+        color: #71717a; /* zinc-500 */
+        justify-self: start;
+    }
+
+    .work-card__duration {
+        font-family: monospace;
+        font-size: 0.75rem; /* text-xs */
+        color: #71717a; /* zinc-500 */
+        justify-self: end;
+        text-align: right;
+    }
+
+    .work-card__title {
+        font-size: 0.75rem; /* text-xs */
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        justify-self: center;
+        text-align: center;
+    }
+
+    .work-card__title {
+        font-size: 0.75rem; /* text-xs */
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .work-card__media {
+        flex: 1;
+        position: relative;
+        width: 100%;
+        min-height: 0; /* Important for flex child with aspect-ratio content */
+        background-color: transparent;
+        overflow: hidden;
+    }
+
+    /* Media styling wrapper to target images/video deep inside */
+    .work-card__media :global(img),
+    .work-card__media :global(video) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition:
+            filter 0.5s ease,
+            transform 0.5s ease;
+    }
+
+    /* Hover effects */
+    .work-card:hover .work-card__media :global(img),
+    .work-card:hover .work-card__media :global(video) {
+        transform: scale(1.02);
+        filter: brightness(1.05);
+    }
+</style>
+
+<script>
+    import { createGlitchWave } from "../scripts/scramble";
+
+    function setupWorkCards() {
+        const cards = document.querySelectorAll(".work-card");
+
+        cards.forEach((card) => {
+            // Avoid double binding if we re-run
+            if (card.hasAttribute("data-glitch-bound")) return;
+
+            const title = card.querySelector<HTMLElement>("[data-glitch-text]");
+            if (!title) return;
+
+            const originalText = title.textContent || "";
+            let stopWave: (() => void) | null = null;
+
+            card.addEventListener("mouseenter", () => {
+                if (stopWave) stopWave(); // Safety check
+                stopWave = createGlitchWave(title, originalText);
+            });
+
+            card.addEventListener("mouseleave", () => {
+                if (stopWave) {
+                    stopWave();
+                    stopWave = null;
+                }
+            });
+
+            card.setAttribute("data-glitch-bound", "true");
+        });
+    }
+
+    // Initial load
+    setupWorkCards();
+
+    // View transitions
+    document.addEventListener("astro:page-load", setupWorkCards);
+</script>

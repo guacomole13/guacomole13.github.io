@@ -1,0 +1,41 @@
+{
+    "title": "SPARK",
+    "slug": "spark",
+    "date": "2024-05-01",
+    "type": "Short Film",
+    "youtubeId": "cfiwDwusiMw",
+    "duration": "4 min",
+    "synopsis": "An unexpected encounter ignites a spark of connection.",
+    "roles": [
+        "Director"
+    ],
+    "thumbnailKey": "films/spark/spark-thumbnail.webp",
+    "previewMp4": "/video/films/spark-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/spark/spark-still-01.webp",
+            "alt": "SPARK still 1"
+        },
+        {
+            "imageKey": "films/spark/spark-still-02.webp",
+            "alt": "SPARK still 2"
+        },
+        {
+            "imageKey": "films/spark/spark-still-03.webp",
+            "alt": "SPARK still 3"
+        },
+        {
+            "imageKey": "films/spark/spark-still-04.webp",
+            "alt": "SPARK still 4"
+        },
+        {
+            "imageKey": "films/spark/spark-still-05.webp",
+            "alt": "SPARK still 5"
+        },
+        {
+            "imageKey": "films/spark/spark-still-07.webp",
+            "alt": "SPARK still 7"
+        }
+    ],
+    "indexTile": "small"
+}

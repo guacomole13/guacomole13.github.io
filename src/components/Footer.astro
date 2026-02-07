@@ -1,0 +1,65 @@
+---
+/**
+ * Footer Component
+ *
+ * Site-wide footer with social icons (bottom-left) and copyright (bottom-right).
+ * Uses fixed positioning per Figma design.
+ */
+
+import { getCollection } from "astro:content";
+import SocialIcons from "./SocialIcons.astro";
+
+// Get home config for social links
+const siteEntries = await getCollection("site");
+const homeEntry = siteEntries.find((entry) => entry.id === "home");
+const home = homeEntry?.data as {
+    socialLinks?: Array<{
+        platform: "instagram" | "youtube" | "linkedin";
+        url: string;
+    }>;
+};
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+    <!-- Copyright at bottom-left -->
+    <p class="site-footer__copyright">©{currentYear} Michael Omole</p>
+
+    <!-- Social icons at bottom-right -->
+    <div class="site-footer__right">
+        {home?.socialLinks && <SocialIcons links={home.socialLinks} />}
+    </div>
+</footer>
+
+<style>
+    .site-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        pointer-events: none; /* Allow clicking through empty space */
+    }
+
+    .site-footer__right {
+        pointer-events: auto; /* Make icons clickable */
+    }
+
+    .site-footer__copyright {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        pointer-events: auto;
+    }
+
+    /* Hide on mobile (or adjust as needed) */
+    @media (max-width: 1023px) {
+        .site-footer {
+            padding: 1rem 1.5rem;
+        }
+    }
+</style>

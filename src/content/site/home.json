@@ -1,0 +1,25 @@
+{
+    "heroVideoPath": "/video/hero-page-loop-v3.mp4",
+    "heroVideoPoster": "site/hero-poster.jpg",
+    "roles": [
+        "FILM DIRECTOR",
+        "WRITER",
+        "CREATIVE DIRECTOR"
+    ],
+    "introParagraph": "I'm Michael Omole, a director based in Los Angeles. My work unlocks feeling through character-driven stories and striking visuals.\n\nI approach every project with curiosity and craft—whether directing a short film, crafting a music video, or leading a brand campaign.",
+    "email": "michaelomole00@gmail.com",
+    "socialLinks": [
+        {
+            "platform": "instagram",
+            "url": "https://www.instagram.com/omo.omole/"
+        },
+        {
+            "platform": "youtube",
+            "url": "https://www.youtube.com/@omo.omole1"
+        },
+        {
+            "platform": "linkedin",
+            "url": "https://www.linkedin.com/in/michaelomole/"
+        }
+    ]
+}

@@ -1,0 +1,470 @@
+---
+/**
+ * Film Detail Page
+ *
+ * SSG page for individual films with:
+ * - Click-to-load YouTube embed
+ * - Editorial layout with roles and synopsis
+ * - Stills bento grid with lightbox
+ * - Credits section
+ * - Optional poster with title overlay
+ * - Chronological next navigation
+ */
+
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import { getImage } from "../../lib/images";
+import YouTubeLiteEmbed from "../../components/YouTubeLiteEmbed.astro";
+import InstagramEmbed from "../../components/InstagramEmbed.astro";
+import BentoGrid from "../../components/BentoGrid.astro";
+import Lightbox from "../../components/Lightbox.astro";
+import {
+    SITE_URL,
+    generateVideoSchema,
+    getYouTubeThumbnail,
+} from "../../lib/seo";
+
+export async function getStaticPaths() {
+    const films = await getCollection("films");
+
+    // Sort films by date for "next" computation (newest first)
+    const sortedFilms = films.sort(
+        (a, b) =>
+            new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+    );
+
+    return sortedFilms.map((film, index) => {
+        // Next film is the next older one (index + 1)
+        const nextFilm = sortedFilms[index + 1] ?? null;
+
+        return {
+            params: { slug: film.data.slug },
+            props: {
+                film: film.data,
+                nextFilm: nextFilm?.data ?? null,
+            },
+        };
+    });
+}
+
+const { film, nextFilm } = Astro.props;
+
+// Extract year from date
+const year = new Date(film.date).getFullYear();
+
+// Get poster image if available
+const posterImage = film.posterKey ? getImage(film.posterKey) : null;
+
+// Combine thumbnail with stills for the gallery
+const galleryStills = [
+    { imageKey: film.thumbnailKey, alt: `${film.title} Thumbnail` },
+    ...(film.stills || [])
+];
+
+// =========================================
+// SEO: Generate OG image and JSON-LD
+// =========================================
+
+// Cast film to access optional properties (schema refine doesn't narrow types)
+const filmData = film as {
+    youtubeId?: string;
+    instagramId?: string;
+    duration?: string;
+} & typeof film;
+
+// Determine best OG image: poster > thumbnail > YouTube thumbnail
+let ogImageUrl: string;
+if (posterImage) {
+    // Use poster if available (will be optimized by Astro)
+    ogImageUrl = `${SITE_URL}${posterImage.src}`;
+} else if (film.thumbnailKey) {
+    const thumbnailImage = getImage(film.thumbnailKey);
+    ogImageUrl = thumbnailImage ? `${SITE_URL}${thumbnailImage.src}` : `${SITE_URL}/og-default.jpg`;
+} else if (filmData.youtubeId) {
+    ogImageUrl = getYouTubeThumbnail(filmData.youtubeId, "maxresdefault");
+} else {
+    ogImageUrl = `${SITE_URL}/og-default.jpg`;
+}
+
+// Generate VideoObject JSON-LD
+const videoSchema = generateVideoSchema({
+    title: film.title,
+    slug: film.slug,
+    synopsis: film.synopsis,
+    date: film.date,
+    youtubeId: filmData.youtubeId,
+    thumbnailUrl: ogImageUrl,
+    duration: filmData.duration,
+});
+---
+
+<Layout
+    title={`${film.title} | Michael Omole`}
+    description={film.synopsis}
+    openGraph={{
+        title: film.title,
+        description: film.synopsis,
+        type: "video.movie",
+        image: ogImageUrl,
+    }}
+    jsonLd={videoSchema}
+>
+
+    <main class="min-h-screen">
+        <!-- Back Link -->
+        <nav class="ui-container pt-8 pb-4">
+            <a href="/film" class="ui-label hover:text-white transition-colors">
+                ← BACK TO FILM INDEX
+            </a>
+        </nav>
+
+        <!-- Video Section -->
+        <section class="ui-container pb-6 flex justify-center">
+            {
+                filmData.instagramId ? (
+                    <InstagramEmbed instagramId={filmData.instagramId} title={film.title} />
+                ) : filmData.youtubeId ? (
+                    <YouTubeLiteEmbed youtubeId={filmData.youtubeId} title={film.title} />
+                ) : null
+            }
+        </section>
+
+        <!-- Title Section -->
+        <header class="ui-container pb-8">
+            <div
+                class="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2"
+            >
+                <h1 class="film-title">{film.title}</h1>
+                <p class="film-meta">
+                    <span>{film.type}</span>
+                    <span>{year}</span>
+                </p>
+            </div>
+        </header>
+
+        <!-- Two Column: Roles + Synopsis -->
+        <section class="ui-container pb-12">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                <!-- Roles Column -->
+                <div class="md:col-span-3">
+                    <ul class="space-y-0">
+                        {
+                            film.roles.map((role) => (
+                                <li class="film-role">{role}</li>
+                            ))
+                        }
+                    </ul>
+
+                    {/* Devices section - separated by line */}
+                    {
+                        film.devices && film.devices.length > 0 && (
+                            <div class="film-devices">
+                                {film.devices.map((device) => (
+                                    <span class="film-device">{device}</span>
+                                ))}
+                            </div>
+                        )
+                    }
+                </div>
+
+                <!-- Synopsis Column -->
+                <div class="md:col-span-9">
+                    <p class="film-synopsis whitespace-pre-line">
+                        {film.synopsis}
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stills (if any) -->
+        <!-- Stills (Thumbnail + Stills) -->
+        {
+            galleryStills.length > 0 && (
+                <section class="ui-container pb-12">
+                    <BentoGrid stills={galleryStills} />
+                    <Lightbox stills={galleryStills} />
+                </section>
+            )
+        }
+
+        <!-- Credits (if any) -->
+        {
+            film.credits && film.credits.length > 0 && (
+                <section class="ui-container pb-12">
+                    <p class="ui-label mb-4">CREDITS</p>
+                    <div class="credits-grid">
+                        {film.credits.map((credit) => (
+                            <div class="credit-row">
+                                <span class="credit-role">{credit.role}</span>
+                                <span class="credit-name">{credit.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )
+        }
+
+        <!-- Poster (if any) - with title overlay like design -->
+        {
+            posterImage && (
+                <section class="ui-container pb-12">
+                    <div class="poster-container" id="poster-trigger">
+                        <Image
+                            src={posterImage}
+                            alt={`${film.title} poster`}
+                            class="poster-image"
+                            widths={[800, 1200, 1600]}
+                            sizes="(max-width: 768px) 100vw, 80vw"
+                        />
+                    </div>
+
+                    <!-- Expanded View -->
+                    <div id="poster-overlay" class="poster-overlay">
+                        <button type="button" class="poster-close" id="poster-close" aria-label="Close poster">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                        <img 
+                            src={posterImage.src} 
+                            alt={`${film.title} poster expanded`} 
+                            class="poster-expanded" 
+                        />
+                    </div>
+                </section>
+
+                <script>
+                    const trigger = document.getElementById('poster-trigger');
+                    const overlay = document.getElementById('poster-overlay');
+                    const closeBtn = document.getElementById('poster-close');
+
+                    if (trigger && overlay) {
+                        const closePoster = () => {
+                            overlay.classList.remove('active');
+                            document.body.style.overflow = '';
+                        };
+
+                        trigger.addEventListener('click', () => {
+                            overlay.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                            // Focus close button for accessibility
+                            closeBtn?.focus();
+                        });
+
+                        overlay.addEventListener('click', (e) => {
+                            if (e.target === overlay) {
+                                closePoster();
+                            }
+                        });
+
+                        closeBtn?.addEventListener('click', (e) => {
+                            e.stopPropagation(); // Prevent overlay click
+                            closePoster();
+                        });
+
+                        // Close on Escape key
+                        document.addEventListener('keydown', (e) => {
+                            if (e.key === 'Escape' && overlay.classList.contains('active')) {
+                                closePoster();
+                            }
+                        });
+                    }
+                </script>
+            )
+        }
+
+        <!-- Footer Navigation -->
+        <footer
+            class="ui-container py-8 flex justify-between items-center text-sm border-t border-white/10"
+        >
+            <a href="/film" class="ui-label hover:text-white transition-colors">
+                ← BACK TO FILM INDEX
+            </a>
+            {
+                nextFilm && (
+                    <a
+                        href={`/film/${nextFilm.slug}`}
+                        class="ui-label hover:text-white transition-colors"
+                    >
+                        NEXT STUDY →
+                    </a>
+                )
+            }
+        </footer>
+    </main>
+</Layout>
+
+<style>
+    /* Film title - large display text */
+    .film-title {
+        font-size: clamp(2.5rem, 8vw, 5rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    /* Film metadata - type and year spaced apart */
+    .film-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-xl);
+        font-size: var(--text-xs);
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        min-width: 180px;
+    }
+
+    /* Role labels - grouped together without lines */
+    .film-role {
+        font-size: var(--text-xs);
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        padding: 0.125rem 0;
+    }
+
+    /* Devices section - camera/equipment */
+    .film-devices {
+        margin-top: var(--space-md);
+        padding-top: var(--space-md);
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .film-device {
+        font-size: var(--text-xs);
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        padding: 0.25rem 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .film-device:last-child {
+        border-bottom: none;
+    }
+
+    /* Synopsis text */
+    .film-synopsis {
+        font-size: var(--text-base);
+        line-height: 1.7;
+        color: var(--color-text);
+    }
+
+    /* Credits grid */
+    .credits-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 0;
+    }
+
+    @media (min-width: 768px) {
+        .credits-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0 var(--space-xl);
+        }
+    }
+
+    .credit-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--color-border);
+        font-size: var(--text-sm);
+    }
+
+    .credit-role {
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: var(--text-xs);
+    }
+
+    .credit-name {
+        color: var(--color-text);
+        text-align: right;
+    }
+
+    /* Poster with overlay */
+    .poster-container {
+        position: relative;
+        width: 45%;
+        margin: 0 auto; /* Center the smaller poster */
+        aspect-ratio: 2/3;
+        overflow: hidden;
+        cursor: zoom-in;
+    }
+
+    /* Expanded poster overlay */
+    .poster-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+            opacity 0.3s ease,
+            visibility 0.3s ease;
+        padding: 2rem;
+    }
+
+    .poster-overlay.active {
+        opacity: 1;
+        visibility: visible;
+        cursor: zoom-out;
+    }
+
+    .poster-expanded {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        cursor: default;
+    }
+
+    .poster-close {
+        position: absolute;
+        top: var(--space-lg);
+        right: var(--space-lg);
+        z-index: 2010;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border: 1px solid var(--color-border);
+        background: transparent;
+        color: var(--color-text);
+        cursor: pointer;
+        transition: border-color 0.15s ease;
+    }
+
+    .poster-close:hover {
+        border-color: var(--color-border-strong);
+    }
+
+    .poster-close:focus-visible {
+        outline: 2px solid var(--color-text);
+        outline-offset: 2px;
+    }
+
+    .poster-image {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+</style>

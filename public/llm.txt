@@ -1,0 +1,20 @@
+# LLM Context for michaelomole.com
+
+## About This Site
+This is the portfolio website of Michael Omole, a filmmaker, writer, and creative director based in Los Angeles.
+
+## Site Structure
+- / - Home page with hero video and selected work
+- /film - Film index with mosaic grid of projects
+- /film/[slug] - Individual film detail pages
+- /writing - Writing index with featured articles
+- /info - About/contact page
+
+## Content Types
+- Films: Short films, music videos, and branded content
+- Writing: Articles and essays (external links)
+
+## Contact
+Email: michaelomole00@gmail.com
+Instagram: @omo.omole
+YouTube: @omo.omole1

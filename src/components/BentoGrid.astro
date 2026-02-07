@@ -1,0 +1,196 @@
+---
+/**
+ * BentoGrid - Stills grid with tile spans and focal points
+ *
+ * Displays a grid of images with configurable tile sizes:
+ * - 1x1: Single cell
+ * - 2x1: Wide (2 columns, 1 row)
+ * - 1x2: Tall (1 column, 2 rows)
+ * - 2x2: Large (2 columns, 2 rows)
+ *
+ * Supports focal points for object-position control.
+ * Clicking an image opens the lightbox.
+ */
+
+import { Image } from "astro:assets";
+import { getImage } from "../lib/images";
+import type { Still } from "../content.config";
+
+interface Props {
+    stills: Still[];
+}
+
+const { stills } = Astro.props;
+
+// Map tile size to grid span classes
+function getTileClasses(tile?: string): string {
+    switch (tile) {
+        case "2x1":
+            return "col-span-2 row-span-1";
+        case "1x2":
+            return "col-span-1 row-span-2";
+        case "2x2":
+            return "col-span-2 row-span-2";
+        case "1x1":
+        default:
+            return "col-span-1 row-span-1";
+    }
+}
+
+// Convert focal point (0-1) to object-position percentage
+function getFocalPosition(focalPoint?: { x: number; y: number }): string {
+    if (!focalPoint) return "50% 50%";
+    const x = Math.round(focalPoint.x * 100);
+    const y = Math.round(focalPoint.y * 100);
+    return `${x}% ${y}%`;
+}
+---
+
+{
+    stills && stills.length > 0 && (
+        <div class="bento-grid">
+            {stills.map((still, index) => {
+                const image = getImage(still.imageKey);
+                const tileClasses = getTileClasses(still.tile);
+                const focalPosition = getFocalPosition(still.focalPoint);
+
+                return (
+                    <button
+                        type="button"
+                        class={`bento-grid__item ${tileClasses}`}
+                        data-lightbox-trigger
+                        data-lightbox-index={index}
+                        aria-label={`View ${still.alt} in fullscreen`}
+                    >
+                        {image ? (
+                            <Image
+                                src={image}
+                                alt={still.alt}
+                                class="bento-grid__image"
+                                style={`object-position: ${focalPosition};`}
+                                widths={[400, 800, 1200]}
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            />
+                        ) : (
+                            <div class="bento-grid__placeholder">
+                                <span>{still.alt}</span>
+                            </div>
+                        )}
+                    </button>
+                );
+            })}
+        </div>
+    )
+}
+
+<!-- Hidden data for lightbox -->
+<script
+    define:vars={{
+        stillsData: stills.map((s) => ({ imageKey: s.imageKey, alt: s.alt })),
+    }}
+>
+    window.__lightboxStills = stillsData;
+</script>
+
+<style>
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: 220px;
+        gap: 2px;
+        grid-auto-flow: dense; /* Fills gaps automatically */
+    }
+
+    @media (min-width: 768px) {
+        .bento-grid {
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 240px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .bento-grid {
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 200px;
+        }
+    }
+
+    .bento-grid__item {
+        position: relative;
+        padding: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    .bento-grid__item:focus-visible {
+        outline: 2px solid var(--color-text);
+        outline-offset: -2px;
+    }
+
+    /* Grid spans */
+    .col-span-1 {
+        grid-column: span 1;
+    }
+    .col-span-2 {
+        grid-column: span 2;
+    }
+    .row-span-1 {
+        grid-row: span 1;
+    }
+    .row-span-2 {
+        grid-row: span 2;
+    }
+
+    /* On small screens, force wide tiles to fit if needed, 
+       though span 2 on a 2-col grid is fine (full width).
+       We just ensure they don't overflow. */
+    @media (max-width: 767px) {
+        .col-span-2 {
+            grid-column: span 2;
+        }
+    }
+    .bento-grid__image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition:
+            transform 0.4s ease,
+            filter 0.4s ease;
+    }
+
+    .bento-grid__item:hover .bento-grid__image {
+        transform: scale(1.03);
+        filter: brightness(1.05);
+    }
+
+    .bento-grid__placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--color-text-muted);
+        font-size: var(--text-xs);
+        text-align: center;
+        padding: var(--space-sm);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+        .bento-grid__image {
+            transition: none;
+        }
+        .bento-grid__item:hover .bento-grid__image {
+            transform: none;
+            filter: none;
+        }
+        .bento-grid__item::after {
+            transition: none;
+        }
+    }
+</style>

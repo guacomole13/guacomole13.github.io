@@ -1,0 +1,20 @@
+{
+    "artistImageKey": "site/michael-omole-profile.webp",
+    "artistImageAlt": "Michael Omole, filmmaker and creative director",
+    "bio": "Michael Omole is a filmmaker, writer, and creative director based in Los Angeles. A Nigerian-American from Broward County, FL, his work spans narrative shorts, music videos, and branded content. Michael's work investigates the transnational human struggles with identity, place, transformation, and future through the lens of character study and visual metaphor.\n\nMichael studied disciplines across environmental science, economics, computer science, and visual arts before graduating cum laude from Harvard University. His thesis \"Who Gets to Live in a Utopia: Lagos, Eko Atlantic City, and Just Climate Futures\" won the 2024 James J. McCarthy Prize for the Most Outstanding Thesis in Environmental Science and Public Policy.",
+    "contact": {
+        "email": "michaelomole00@gmail.com",
+        "buttonLabel": "Get in Touch",
+        "mailtoSubject": "Project Inquiry"
+    },
+    "platforms": [
+        {
+            "label": "Instagram",
+            "url": "https://www.instagram.com/omo.omole/"
+        },
+        {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@omo.omole1"
+        }
+    ]
+}

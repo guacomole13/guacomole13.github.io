@@ -1,0 +1,229 @@
+---
+/**
+ * YouTubeLiteEmbed - Click-to-load YouTube embed component
+ *
+ * Shows a thumbnail with play button initially. On click, replaces
+ * with an iframe using youtube-nocookie.com for privacy.
+ * No external dependencies.
+ */
+
+interface Props {
+    youtubeId: string;
+    title?: string;
+}
+
+const { youtubeId, title = "Video" } = Astro.props;
+
+// Construct thumbnail URLs with fallback
+const thumbnailHigh = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
+const thumbnailFallback = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+const watchUrl = `https://www.youtube.com/watch?v=${youtubeId}`;
+---
+
+<div class="youtube-lite" data-youtube-id={youtubeId} data-title={title}>
+    <!-- Video container with fixed aspect ratio -->
+    <div class="youtube-lite__wrapper">
+        <!-- Thumbnail with play button overlay -->
+        <button
+            type="button"
+            class="youtube-lite__button"
+            aria-label={`Play ${title}`}
+        >
+            <picture>
+                <source srcset={thumbnailHigh} type="image/jpeg" />
+                <img
+                    src={thumbnailFallback}
+                    alt={`${title} thumbnail`}
+                    class="youtube-lite__thumbnail"
+                    loading="lazy"
+                />
+            </picture>
+
+            <!-- Play button SVG -->
+            <span class="youtube-lite__play" aria-hidden="true">
+                <svg viewBox="0 0 68 48" width="68" height="48">
+                    <path
+                        class="youtube-lite__play-bg"
+                        d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"
+                        fill="#212121"
+                        fill-opacity="0.8"></path>
+                    <path d="M 45,24 27,14 27,34" fill="#fff"></path>
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <!-- "Watch on YouTube" link (always visible) -->
+    <a
+        href={watchUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="youtube-lite__external"
+    >
+        Watch on YouTube ↗
+    </a>
+</div>
+
+<style>
+    .youtube-lite {
+        position: relative;
+        width: 100%;
+    }
+
+    /* 
+     * Wrapper maintains FIXED dimensions for both thumbnail and iframe.
+     * Uses padding-bottom technique as fallback for aspect-ratio.
+     * The container size is locked and never changes.
+     */
+    .youtube-lite__wrapper {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 56.25%; /* 16:9 aspect ratio = 9/16 = 0.5625 */
+        border: 1px solid var(--color-border);
+        overflow: hidden;
+        background: #000;
+    }
+
+    /* Modern browsers: use aspect-ratio and override padding */
+    @supports (aspect-ratio: 16 / 9) {
+        .youtube-lite__wrapper {
+            height: auto;
+            padding-bottom: 0;
+            aspect-ratio: 16 / 9;
+        }
+    }
+
+    .youtube-lite__button {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .youtube-lite__button:hover .youtube-lite__play-bg {
+        fill: #f00;
+        fill-opacity: 1;
+    }
+
+    .youtube-lite__button:focus-visible {
+        outline: 2px solid var(--color-text);
+        outline-offset: 2px;
+    }
+
+    .youtube-lite__thumbnail {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .youtube-lite__play {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        transition: transform 0.15s ease;
+    }
+
+    .youtube-lite__button:hover .youtube-lite__play {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .youtube-lite__external {
+        display: inline-block;
+        margin-top: var(--space-sm);
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        text-decoration: none;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        transition: color 0.15s ease;
+    }
+
+    .youtube-lite__external:hover {
+        color: var(--color-text);
+    }
+
+    /* Iframe state (injected via JS) */
+    .youtube-lite--active .youtube-lite__button {
+        display: none;
+    }
+
+    .youtube-lite__iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* Reduced motion: disable hover scale */
+    @media (prefers-reduced-motion: reduce) {
+        .youtube-lite__play {
+            transition: none;
+        }
+        .youtube-lite__button:hover .youtube-lite__play {
+            transform: translate(-50%, -50%);
+        }
+    }
+</style>
+
+<script>
+    /**
+     * YouTube Lite Embed - Click-to-load functionality
+     *
+     * When the play button is clicked, replaces the thumbnail
+     * with an actual YouTube iframe using youtube-nocookie.com
+     */
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const containers =
+            document.querySelectorAll<HTMLElement>(".youtube-lite");
+
+        containers.forEach((container) => {
+            const wrapper = container.querySelector<HTMLElement>(
+                ".youtube-lite__wrapper",
+            );
+            const button = container.querySelector<HTMLButtonElement>(
+                ".youtube-lite__button",
+            );
+            const youtubeId = container.dataset.youtubeId;
+
+            if (!wrapper || !button || !youtubeId) return;
+
+            button.addEventListener("click", () => {
+                // Create iframe with inline styles to ensure it fills the container
+                // (Astro's scoped CSS won't apply to dynamically created elements)
+                const iframe = document.createElement("iframe");
+                iframe.className = "youtube-lite__iframe";
+
+                // Set inline styles to guarantee sizing
+                iframe.style.position = "absolute";
+                iframe.style.top = "0";
+                iframe.style.left = "0";
+                iframe.style.width = "100%";
+                iframe.style.height = "100%";
+                iframe.style.border = "none";
+
+                iframe.src = `https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0`;
+                iframe.title = container.dataset.title || "Video";
+                iframe.allow =
+                    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                iframe.allowFullscreen = true;
+
+                // Insert iframe into wrapper (same container as button)
+                wrapper.appendChild(iframe);
+
+                // Mark as active (hides button via CSS)
+                container.classList.add("youtube-lite--active");
+            });
+        });
+    });
+</script>

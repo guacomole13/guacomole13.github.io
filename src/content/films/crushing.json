@@ -1,0 +1,27 @@
+{
+    "title": "Crush(ing)",
+    "slug": "crushing",
+    "date": "2024-04-18",
+    "type": "Short Film",
+    "instagramId": "C6hMyxdPBO0",
+    "duration": ">1 min",
+    "synopsis": "The tidal experience of a crush washes over a spring day.",
+    "roles": [
+        "Director",
+        "Editor"
+    ],
+    "thumbnailKey": "films/crushing/crushing-thumbnail.webp",
+    "previewMp4": "/video/films/crushing-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/crushing/crushing-still-02.webp",
+            "alt": "Crush(ing) still 2"
+        },
+        {
+            "imageKey": "films/crushing/crushing-still-03.webp",
+            "alt": "Crush(ing) still 3"
+        }
+    ],
+    "homeFeaturedOrder": 5,
+    "indexTile": "small"
+}

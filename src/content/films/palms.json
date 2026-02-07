@@ -1,0 +1,51 @@
+{
+    "title": "Palms",
+    "slug": "palms",
+    "date": "2024-06-01",
+    "type": "Short Film",
+    "youtubeId": "-FT-6iNuKyA",
+    "duration": "3 min",
+    "synopsis": "While fending off a fierce challenger to his home turf, a boxer recounts what sustains him.",
+    "roles": [
+        "Director",
+        "Editor"
+    ],
+    "thumbnailKey": "films/palms/palms-thumbnail.webp",
+    "previewMp4": "/video/films/palms-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/palms/palms-still-02.webp",
+            "alt": "Palms still 2"
+        },
+        {
+            "imageKey": "films/palms/palms-still-03.webp",
+            "alt": "Palms still 3"
+        },
+        {
+            "imageKey": "films/palms/palms-still-04.webp",
+            "alt": "Palms still 4"
+        },
+        {
+            "imageKey": "films/palms/palms-still-05.webp",
+            "alt": "Palms still 5"
+        },
+        {
+            "imageKey": "films/palms/palms-still-06.webp",
+            "alt": "Palms still 6"
+        },
+        {
+            "imageKey": "films/palms/palms-still-07.webp",
+            "alt": "Palms still 7"
+        },
+        {
+            "imageKey": "films/palms/palms-still-08.webp",
+            "alt": "Palms still 8"
+        },
+        {
+            "imageKey": "films/palms/palms-still-09.webp",
+            "alt": "Palms still 9"
+        }
+    ],
+    "homeFeaturedOrder": 3,
+    "indexTile": "small"
+}
