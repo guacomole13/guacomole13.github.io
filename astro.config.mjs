@@ -7,6 +7,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
     // Replace with your production URL before deploying
     site: 'https://michaelomole.com',
+    base: '/',
 
     // Static output for Cloudflare Pages
     output: 'static',
