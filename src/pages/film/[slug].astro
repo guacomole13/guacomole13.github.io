@@ -112,11 +112,21 @@ const videoSchema = generateVideoSchema({
 >
 
     <main class="min-h-screen">
-        <!-- Back Link -->
-        <nav class="ui-container pt-8 pb-4">
+        <!-- Navigation Links -->
+        <nav class="ui-container pt-8 pb-4 flex justify-between items-center">
             <a href="/film" class="ui-label hover:text-white transition-colors">
                 ← BACK TO FILM INDEX
             </a>
+            {
+                nextFilm && (
+                    <a
+                        href={`/film/${nextFilm.slug}`}
+                        class="ui-label hover:text-white transition-colors"
+                    >
+                        NEXT STUDY →
+                    </a>
+                )
+            }
         </nav>
 
         <!-- Video Section -->
