@@ -16,7 +16,7 @@
  *   alt="Film title preview"
  * />
  */
-import { Image } from "astro:assets";
+import ContentImage from "./ContentImage.astro";
 import type { ImageMetadata } from "astro";
 
 interface Props {
@@ -41,7 +41,7 @@ const uniqueId =
 
 <div class:list={["hover-preview-video", className]} data-hover-preview>
     <!-- Poster image (always visible, becomes hidden on hover for desktop) -->
-    <Image
+    <ContentImage
         src={poster}
         alt={alt}
         class="hover-preview-poster"

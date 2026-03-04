@@ -11,7 +11,7 @@
 
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-import { Image } from "astro:assets";
+import ContentImage from "../components/ContentImage.astro";
 import { getImage } from "../lib/images";
 import HoverPreviewVideo from "../components/HoverPreviewVideo.astro";
 import SelectedWork from "../components/SelectedWork.astro";
@@ -63,7 +63,7 @@ const posterImage = home?.heroVideoPoster
 				{/* Fallback poster for reduced motion or video failure */}
 				{
 					posterImage && (
-						<Image
+						<ContentImage
 							src={posterImage}
 							alt="Hero background"
 							class="hero__poster"

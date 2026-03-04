@@ -10,7 +10,7 @@
  * - Desktop: hover preview video when available
  * - Mobile: poster/thumbnail only
  */
-import { Image } from "astro:assets";
+import ContentImage from "./ContentImage.astro";
 import { getImage } from "../lib/images";
 import HoverPreviewVideo from "./HoverPreviewVideo.astro";
 import type { Film } from "../content.config";
@@ -20,7 +20,7 @@ interface Props {
         data: Film;
     };
     displayIndex: string;
-    tileSize: "small" | "wide" | "large";
+    tileSize: "small" | "wide" | "large" | "hero";
 }
 
 const { film, displayIndex, tileSize } = Astro.props;
@@ -39,15 +39,20 @@ const sizeClasses = {
     small: "",
     wide: "sm:col-span-2",
     large: "sm:col-span-2 sm:row-span-2",
+    hero: "sm:col-span-2 sm:row-span-2", // 2x2 grid, meaning 4 cells total
 };
 
 // Extract year from date
 const year = film.data.date ? new Date(film.data.date).getFullYear() : null;
+
+// Determine if this is the newest film
+const isNewest = displayIndex === "01 - NEWEST";
 ---
 
 <a
     href={`/film/${film.data.slug}`}
     class:list={["film-tile group", sizeClasses[tileSize]]}
+    {...isNewest ? { "data-is-newest": "true" } : {}}
 >
     <!-- Header inside the box -->
     <div class="film-tile__header">
@@ -73,7 +78,7 @@ const year = film.data.date ? new Date(film.data.date).getFullYear() : null;
                 />
             ) : thumbnail ? (
                 /* Fallback to static image if no preview video */
-                <Image
+                <ContentImage
                     src={thumbnail}
                     alt={film.data.title}
                     class="film-tile-img"
@@ -144,6 +149,19 @@ const year = film.data.date ? new Date(film.data.date).getFullYear() : null;
         padding: 0.75rem 1rem;
         background-color: transparent;
         z-index: 10;
+    }
+
+    .film-tile__index,
+    .film-tile__title,
+    .film-tile__duration {
+        transition: color 0.2s ease;
+    }
+
+    .film-tile.is-newest-active .film-tile__index,
+    .film-tile.is-newest-active .film-tile__duration {
+        color: #55aaff; /* Terminal blue */
+        font-weight: 500;
+        text-shadow: 0 0 5px rgba(85, 170, 255, 0.5); /* Slight glow for CRT effect */
     }
 
     .film-tile__index {
@@ -227,27 +245,94 @@ const year = film.data.date ? new Date(film.data.date).getFullYear() : null;
 
         tiles.forEach((tile) => {
             // Avoid double binding
-            if (tile.hasAttribute("data-glitch-bound")) return;
+            if (!tile.hasAttribute("data-glitch-bound")) {
+                const title =
+                    tile.querySelector<HTMLElement>("[data-glitch-text]");
+                if (title) {
+                    const originalText = title.textContent || "";
+                    let stopWave: (() => void) | null = null;
 
-            const title = tile.querySelector<HTMLElement>("[data-glitch-text]");
-            if (!title) return;
+                    tile.addEventListener("mouseenter", () => {
+                        if (stopWave) stopWave();
+                        stopWave = createGlitchWave(title, originalText);
+                    });
 
-            const originalText = title.textContent || "";
-            let stopWave: (() => void) | null = null;
+                    tile.addEventListener("mouseleave", () => {
+                        if (stopWave) {
+                            stopWave();
+                            stopWave = null;
+                        }
+                    });
 
-            tile.addEventListener("mouseenter", () => {
-                if (stopWave) stopWave();
-                stopWave = createGlitchWave(title, originalText);
-            });
-
-            tile.addEventListener("mouseleave", () => {
-                if (stopWave) {
-                    stopWave();
-                    stopWave = null;
+                    tile.setAttribute("data-glitch-bound", "true");
                 }
-            });
+            }
 
-            tile.setAttribute("data-glitch-bound", "true");
+            // Setup newest card typing animation
+            if (
+                tile.hasAttribute("data-is-newest") &&
+                !tile.hasAttribute("data-newest-bound")
+            ) {
+                const indexSpan = tile.querySelector(".film-tile__index");
+                if (indexSpan) {
+                    let hoverInterval: number | undefined;
+                    let cycleTimeouts: number[] = [];
+
+                    const clearCycleTimeouts = () => {
+                        cycleTimeouts.forEach(clearTimeout);
+                        cycleTimeouts = [];
+                    };
+
+                    const runAnimationCycle = () => {
+                        clearCycleTimeouts();
+                        tile.classList.add("is-newest-active");
+
+                        let currentText = "01";
+                        indexSpan.textContent = currentText;
+
+                        const textToAdd = " - NEWEST";
+                        let charIndex = 0;
+
+                        const typeNextChar = () => {
+                            if (charIndex < textToAdd.length) {
+                                currentText += textToAdd[charIndex];
+                                indexSpan.textContent = currentText;
+                                charIndex++;
+                                cycleTimeouts.push(
+                                    window.setTimeout(typeNextChar, 80),
+                                );
+                            }
+                        };
+
+                        cycleTimeouts.push(window.setTimeout(typeNextChar, 0));
+
+                        // Revert after 2800ms
+                        cycleTimeouts.push(
+                            window.setTimeout(() => {
+                                tile.classList.remove("is-newest-active");
+                                indexSpan.textContent = "01 - NEWEST";
+                            }, 2800),
+                        );
+                    };
+
+                    tile.addEventListener("mouseenter", () => {
+                        runAnimationCycle();
+                        hoverInterval = window.setInterval(
+                            runAnimationCycle,
+                            2800,
+                        );
+                    });
+
+                    tile.addEventListener("mouseleave", () => {
+                        if (hoverInterval) clearInterval(hoverInterval);
+                        clearCycleTimeouts();
+                        tile.classList.remove("is-newest-active");
+                        indexSpan.textContent = "01 - NEWEST";
+                    });
+
+                    tile.setAttribute("data-newest-bound", "true");
+                }
+            }
         });
     }
 

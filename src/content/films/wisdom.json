@@ -1,0 +1,69 @@
+{
+    "title": "Wisdom",
+    "slug": "wisdom",
+    "date": "2026-02-27",
+    "type": "Spec Ad",
+    "instagramId": "DVbopgIj0ee",
+    "youtubeId": "wZuZ71j4nsY",
+    "duration": "5 min",
+    "synopsis": "A basketball player is challenged by a former teammate after he quits the team.",
+    "roles": [
+        "Director",
+        "Writer",
+        "Editor"
+    ],
+    "thumbnailKey": "films/wisdom/wisdom-thumbnail.webp",
+    "previewMp4": "/video/films/wisdom-hover-loop.mp4",
+    "stills": [
+        {
+            "imageKey": "films/wisdom/wisdom-still-01.webp",
+            "alt": "Wisdom still 1"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-02.webp",
+            "alt": "Wisdom still 2"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-03.webp",
+            "alt": "Wisdom still 3"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-04.webp",
+            "alt": "Wisdom still 4"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-05.webp",
+            "alt": "Wisdom still 5"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-06.webp",
+            "alt": "Wisdom still 6"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-07.webp",
+            "alt": "Wisdom still 7"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-08.webp",
+            "alt": "Wisdom still 8"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-09.webp",
+            "alt": "Wisdom still 9"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-10.webp",
+            "alt": "Wisdom still 10"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-11.webp",
+            "alt": "Wisdom still 11"
+        },
+        {
+            "imageKey": "films/wisdom/wisdom-still-12.webp",
+            "alt": "Wisdom still 12"
+        }
+    ],
+    "homeFeaturedOrder": 1,
+    "indexTile": "small"
+}

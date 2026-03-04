@@ -1,0 +1,14 @@
+---
+import { Picture } from "astro:assets";
+import type { LocalImageProps, RemoteImageProps } from "astro:assets";
+
+type Props = (LocalImageProps | RemoteImageProps) & {
+    width?: number | any;
+    height?: number | any;
+    quality?: any;
+};
+
+const { src, alt, ...attrs } = Astro.props;
+---
+
+<Picture src={src} alt={alt} formats={["avif", "webp"]} {...attrs as any} />

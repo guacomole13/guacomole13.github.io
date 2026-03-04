@@ -12,7 +12,7 @@
  * Clicking an image opens the lightbox.
  */
 
-import { Image } from "astro:assets";
+import ContentImage from "./ContentImage.astro";
 import { getImage } from "../lib/images";
 import type { Still } from "../content.config";
 
@@ -63,7 +63,7 @@ function getFocalPosition(focalPoint?: { x: number; y: number }): string {
                         aria-label={`View ${still.alt} in fullscreen`}
                     >
                         {image ? (
-                            <Image
+                            <ContentImage
                                 src={image}
                                 alt={still.alt}
                                 class="bento-grid__image"

@@ -10,7 +10,7 @@ const featuredFilms = allFilms
         (a, b) =>
             (a.data.homeFeaturedOrder ?? 0) - (b.data.homeFeaturedOrder ?? 0),
     )
-    .slice(0, 8); // Limit to 8 items max for the grid layout
+    .slice(0, 6); // Limit to 6 items max for the horizontal layout
 ---
 
 <section class="selected-work">
@@ -28,18 +28,12 @@ const featuredFilms = allFilms
                 // Determine grid classes based on index/position
                 let gridClass = "";
 
-                if (index === 0) {
-                    // Item 01: Hero - Spans 6 cols, 2 rows (on desktop)
-                    gridClass = "md:col-span-6 md:row-span-2";
-                } else if (index === 1 || index === 2) {
-                    // Item 02 & 03: Top Right - Span 3 cols each
-                    gridClass = "md:col-span-3";
-                } else if (index === 3 || index === 4) {
-                    // Item 04 & 05: Middle Right - Span 3 cols each
-                    gridClass = "md:col-span-3";
+                if (index === 0 || index === 1) {
+                    // Item 01 & 02: Large - Spans 6 cols, 2 rows
+                    gridClass = "md:col-span-6 md:row-span-2 large-item";
                 } else {
-                    // Item 06, 07, 08: Bottom Row - Span 4 cols each
-                    gridClass = "md:col-span-4";
+                    // Item 03-06: Small - Span 3 cols each
+                    gridClass = "md:col-span-3 small-item";
                 }
 
                 return (
@@ -59,10 +53,28 @@ const featuredFilms = allFilms
             )
         }
     </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" aria-hidden="true">
+        <span class="scroll-indicator__text">SCROLL</span>
+        <svg
+            class="scroll-indicator__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+        >
+            <path
+                d="M5 12h14M12 5l7 7-7 7"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+        </svg>
+    </div>
 </section>
 
 <style>
     .selected-work {
+        position: relative;
         display: flex;
         width: 100%;
         /* Thick borders removed for broken grid aesthetic */
@@ -104,23 +116,35 @@ const featuredFilms = allFilms
         white-space: nowrap;
     }
 
-    /* Grid */
+    /* Grid Container (Horizontally Scrollable) */
     .selected-work__grid {
         flex: 1;
-        display: grid;
-        grid-template-columns: 1fr; /* Mobile: 1 col */
-        gap: 0; /* No gap, borders handled by items */
-        /* background-color removed */
+        min-width: 0; /* Allow the flex item to be smaller than its content, enabling internal scrolling */
+        display: flex; /* Mobile: side-by-side flex layout */
+        gap: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        /* Hide scrollbar, but keep functionality */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+        position: relative;
+    }
+
+    .selected-work__grid::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
     }
 
     @media (min-width: 768px) {
         .selected-work__grid {
-            grid-template-columns: repeat(12, 1fr);
-            /* 
-         We don't need explicit row definitions if we rely on auto-placement 
-         and span classes, but can define min-heights if needed.
-      */
+            display: grid;
+            /* 12 cols per viewport width, but grid has 18 cols total to allow scrolling */
+            /* Subtracting sidebar width (3rem) from 100vw to get exact viewport units */
+            grid-template-columns: repeat(18, calc((100vw - 3rem) / 12));
+            /* Force rows to take full height of the container if needed */
             grid-auto-rows: minmax(280px, auto);
+            /* Reset flex for grid layout */
+            flex-direction: row;
         }
     }
 
@@ -129,13 +153,94 @@ const featuredFilms = allFilms
         /* Ensure content stretches */
         display: flex;
         flex-direction: column;
-        min-height: 300px; /* Minimum height for mobile/cards */
+        flex: 0 0 85vw; /* Mobile width */
+        min-height: 50vh; /* Minimum height for mobile/cards */
+        scroll-snap-align: start;
     }
 
     @media (min-width: 768px) {
         .selected-work__item {
             min-height: 0; /* Let grid control height */
             height: 100%;
+            flex: auto; /* Reset flex */
+        }
+    }
+
+    /* Scroll Indicator Base */
+    .scroll-indicator {
+        position: absolute;
+        right: 2rem;
+        bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(255, 255, 255, 0.7);
+        pointer-events: none;
+        z-index: 20;
+        transition: opacity 0.5s ease;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 0.5rem 1rem;
+        border-radius: 99px;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Hide scroll indicator by default on mobile, can rely on native scrollbars/peeking */
+    @media (max-width: 767px) {
+        .scroll-indicator {
+            display: none;
+        }
+    }
+
+    .scroll-indicator__text {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+    }
+
+    .scroll-indicator__icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        animation: bounceRight 2s infinite ease-in-out;
+    }
+
+    /* State class added by JS */
+    .scroll-indicator.is-hidden {
+        opacity: 0;
+    }
+
+    @keyframes bounceRight {
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+        50% {
+            transform: translateX(4px);
         }
     }
 </style>
+
+<script>
+    function setupScrollIndicator() {
+        const grid = document.querySelector(".selected-work__grid");
+        const indicator = document.querySelector(".scroll-indicator");
+
+        if (!grid || !indicator) return;
+
+        let hasScrolled = false;
+
+        const handleScroll = () => {
+            if (!hasScrolled) {
+                hasScrolled = true;
+                indicator.classList.add("is-hidden");
+
+                // Remove listener once triggered to save performance
+                grid.removeEventListener("scroll", handleScroll);
+            }
+        };
+
+        grid.addEventListener("scroll", handleScroll, { passive: true });
+    }
+
+    document.addEventListener("DOMContentLoaded", setupScrollIndicator);
+    document.addEventListener("astro:page-load", setupScrollIndicator);
+</script>

@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import { getImage } from "../lib/images";
-import { Image } from "astro:assets";
+import ContentImage from "../components/ContentImage.astro";
 
 // Get info config
 const siteEntries = await getCollection("site");
@@ -38,7 +38,7 @@ const artistImage = info?.artistImageKey ? getImage(info.artistImageKey) : null;
                     <div class="info-tile__media">
                         {
                             artistImage ? (
-                                <Image
+                                <ContentImage
                                     src={artistImage}
                                     alt={
                                         info?.artistImageAlt ?? "Michael Omole"

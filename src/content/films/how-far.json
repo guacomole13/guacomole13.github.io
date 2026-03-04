@@ -11,13 +11,17 @@
         "Writer",
         "Editor"
     ],
-    "thumbnailKey": "films/how-far/how-far-thumbnail.webp",
-    "posterKey": "films/how-far/how-far-poster.webp",
+    "thumbnailKey": "films/how-far/how-far-thumbnail.png",
+    "posterKey": "films/how-far/how-far-poster.png",
     "previewMp4": "/video/films/how-far-hover-loop.mp4",
     "stills": [
         {
             "imageKey": "films/how-far/how-far-still-01.webp",
             "alt": "How Far? still 1"
+        },
+        {
+            "imageKey": "films/how-far/how-far-still-02.webp",
+            "alt": "How Far? still 2"
         },
         {
             "imageKey": "films/how-far/how-far-still-03.webp",
@@ -56,6 +60,6 @@
             "alt": "How Far? still 11"
         }
     ],
-    "homeFeaturedOrder": 1,
+    "homeFeaturedOrder": 2,
     "indexTile": "large"
 }

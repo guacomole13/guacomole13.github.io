@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import ContentImage from "./ContentImage.astro";
 import { getImage } from "../lib/images";
 import type { Film } from "../content.config";
 import HoverPreviewVideo from "./HoverPreviewVideo.astro";
@@ -12,14 +12,19 @@ interface Props {
 const { film, index } = Astro.props;
 
 // Format index as "01", "02", etc.
-const indexStr = String(index + 1).padStart(2, "0");
+const isNewest = index === 0;
+const indexStr = isNewest ? "01 - NEWEST" : String(index + 1).padStart(2, "0");
 
 // Get images
 const thumbnail = film.thumbnailKey ? getImage(film.thumbnailKey) : null;
 const hasPreview = !!film.previewMp4;
 ---
 
-<a href={`/film/${film.slug}`} class="work-card group">
+<a
+    href={`/film/${film.slug}`}
+    class="work-card group"
+    {...isNewest ? { "data-is-newest": "true" } : {}}
+>
     <!-- Header inside the box -->
     <div class="work-card__header">
         <span class="work-card__index">{indexStr}</span>
@@ -40,7 +45,7 @@ const hasPreview = !!film.previewMp4;
                     previewId={`home-${film.slug}`}
                 />
             ) : thumbnail ? (
-                <Image
+                <ContentImage
                     src={thumbnail}
                     alt={film.title}
                     class="work-card__img"
@@ -103,6 +108,19 @@ const hasPreview = !!film.previewMp4;
         /* border-bottom removed for broken grid aesthetic */
         background-color: transparent;
         z-index: 10;
+    }
+
+    .work-card__index,
+    .work-card__title,
+    .work-card__duration {
+        transition: color 0.2s ease;
+    }
+
+    .work-card.is-newest-active .work-card__index,
+    .work-card.is-newest-active .work-card__duration {
+        color: #55aaff; /* Terminal blue */
+        font-weight: 500;
+        text-shadow: 0 0 5px rgba(85, 170, 255, 0.5); /* Slight glow for CRT effect */
     }
 
     .work-card__index {
@@ -180,27 +198,94 @@ const hasPreview = !!film.previewMp4;
 
         cards.forEach((card) => {
             // Avoid double binding if we re-run
-            if (card.hasAttribute("data-glitch-bound")) return;
+            if (!card.hasAttribute("data-glitch-bound")) {
+                const title =
+                    card.querySelector<HTMLElement>("[data-glitch-text]");
+                if (title) {
+                    const originalText = title.textContent || "";
+                    let stopWave: (() => void) | null = null;
 
-            const title = card.querySelector<HTMLElement>("[data-glitch-text]");
-            if (!title) return;
+                    card.addEventListener("mouseenter", () => {
+                        if (stopWave) stopWave(); // Safety check
+                        stopWave = createGlitchWave(title, originalText);
+                    });
 
-            const originalText = title.textContent || "";
-            let stopWave: (() => void) | null = null;
+                    card.addEventListener("mouseleave", () => {
+                        if (stopWave) {
+                            stopWave();
+                            stopWave = null;
+                        }
+                    });
 
-            card.addEventListener("mouseenter", () => {
-                if (stopWave) stopWave(); // Safety check
-                stopWave = createGlitchWave(title, originalText);
-            });
-
-            card.addEventListener("mouseleave", () => {
-                if (stopWave) {
-                    stopWave();
-                    stopWave = null;
+                    card.setAttribute("data-glitch-bound", "true");
                 }
-            });
+            }
 
-            card.setAttribute("data-glitch-bound", "true");
+            // Setup newest card typing animation
+            if (
+                card.hasAttribute("data-is-newest") &&
+                !card.hasAttribute("data-newest-bound")
+            ) {
+                const indexSpan = card.querySelector(".work-card__index");
+                if (indexSpan) {
+                    let hoverInterval: number | undefined;
+                    let cycleTimeouts: number[] = [];
+
+                    const clearCycleTimeouts = () => {
+                        cycleTimeouts.forEach(clearTimeout);
+                        cycleTimeouts = [];
+                    };
+
+                    const runAnimationCycle = () => {
+                        clearCycleTimeouts();
+                        card.classList.add("is-newest-active");
+
+                        let currentText = "01";
+                        indexSpan.textContent = currentText;
+
+                        const textToAdd = " - NEWEST";
+                        let charIndex = 0;
+
+                        const typeNextChar = () => {
+                            if (charIndex < textToAdd.length) {
+                                currentText += textToAdd[charIndex];
+                                indexSpan.textContent = currentText;
+                                charIndex++;
+                                cycleTimeouts.push(
+                                    window.setTimeout(typeNextChar, 80),
+                                );
+                            }
+                        };
+
+                        cycleTimeouts.push(window.setTimeout(typeNextChar, 0));
+
+                        // Revert after 2800ms to sync with 800ms + 2000ms loop
+                        cycleTimeouts.push(
+                            window.setTimeout(() => {
+                                card.classList.remove("is-newest-active");
+                                indexSpan.textContent = "01 - NEWEST";
+                            }, 2800),
+                        );
+                    };
+
+                    card.addEventListener("mouseenter", () => {
+                        runAnimationCycle();
+                        hoverInterval = window.setInterval(
+                            runAnimationCycle,
+                            2800,
+                        );
+                    });
+
+                    card.addEventListener("mouseleave", () => {
+                        if (hoverInterval) clearInterval(hoverInterval);
+                        clearCycleTimeouts();
+                        card.classList.remove("is-newest-active");
+                        indexSpan.textContent = "01 - NEWEST";
+                    });
+
+                    card.setAttribute("data-newest-bound", "true");
+                }
+            }
         });
     }
 

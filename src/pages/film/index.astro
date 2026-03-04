@@ -35,11 +35,13 @@ const TILE_PATTERN: Array<"small" | "wide" | "large"> = [
     "large",
 ];
 
-// Get tile size for a film (override or pattern)
 function getTileSize(
     film: (typeof films)[0],
     index: number,
-): "small" | "wide" | "large" {
+): "small" | "wide" | "large" | "hero" {
+    if (index === 0) {
+        return "hero"; // Ensure newest film is always a 4x4 hero tile
+    }
     if (film.data.indexTile) {
         return film.data.indexTile;
     }
@@ -54,10 +56,10 @@ function getTileSize(
                 <div class="film-grid-wrapper">
                     <div class="film-grid">
                         {films.map((film, index) => {
-                            const displayIndex = String(index + 1).padStart(
-                                2,
-                                "0",
-                            );
+                            const displayIndex =
+                                index === 0
+                                    ? "01 - NEWEST"
+                                    : String(index + 1).padStart(2, "0");
                             const tileSize = getTileSize(film, index);
 
                             return (
