@@ -20,12 +20,58 @@ import Layout from "../layouts/Layout.astro";
             <div class="info-tile">
                 <div class="info-tile__header">
                     <span class="info-tile__index">01</span>
+                    <span class="info-tile__title">VIDEO</span>
+                </div>
+                <div class="info-tile__content w-full aspect-video" style="padding: 0;">
+                    <iframe 
+                        src="https://drive.google.com/file/d/15Uma7ZpOw8Pq2G_ghDUr9lxezP46fFl8/preview" 
+                        class="w-full h-full border-0"
+                        allow="autoplay"
+                        allowfullscreen
+                    ></iframe>
+                </div>
+            </div>
+
+            <div class="info-tile">
+                <div class="info-tile__header">
+                    <span class="info-tile__index">02</span>
                     <span class="info-tile__title">OVERVIEW</span>
                 </div>
                 <div class="info-tile__content">
                     <div class="prose prose-invert max-w-none text-sm leading-relaxed text-zinc-300">
                         <p>
-                            Content for Google Creative goes here.
+                            Before even hearing about this program for the first time, I used Antigravity to create my dream portfolio site. Building on my prior work, I created a travel film using personally shot footage and archival conversations with my parents. Using Google AI Studio, I developed a tool to transcribe my parents' voices and arrange them into a script. Then I used Google's generative image and video models to create the animations and motion graphics I needed and edited them all together. Working across product design, voice synthesis, video generation, and editing was a unique experience that could only work seamlessly through AI tools--power I'm excited to keep discovering.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-tile">
+                <div class="info-tile__header">
+                    <span class="info-tile__index">03</span>
+                    <span class="info-tile__title">CREATIVE TOOL</span>
+                </div>
+                <div class="info-tile__content w-full aspect-video" style="padding: 0;">
+                    <video 
+                        src="/video/AI%20Studio%20Gif.mp4" 
+                        class="w-full h-full object-cover"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                    ></video>
+                </div>
+            </div>
+
+            <div class="info-tile">
+                <div class="info-tile__header">
+                    <span class="info-tile__index">04</span>
+                    <span class="info-tile__title">DESCRIPTION</span>
+                </div>
+                <div class="info-tile__content">
+                    <div class="prose prose-invert max-w-none text-sm leading-relaxed text-zinc-300">
+                        <p>
+                            The Audio Script Builder allows users to upload voice notes and automatically transcribe them into individual sentences with precise timestamps using Gemini AI. It features a drag-and-drop interface where users can easily reorder and edit these sentences to construct a cohesive video script. Finally, the application provides tools to export the completed script as either a combined high-quality audio file or a formatted Markdown document.
                         </p>
                     </div>
                 </div>
