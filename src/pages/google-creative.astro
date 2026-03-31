@@ -1,0 +1,149 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+---
+
+<Layout title="Google Creative | Michael Omole">
+    <div class="page-container">
+        <!-- HEADER -->
+        <header class="page-header relative mb-12">
+            <h1
+                class="text-4xl md:text-6xl font-black uppercase tracking-widest text-white m-0"
+                data-glitch-text
+            >
+                GOOGLE CREATIVE
+            </h1>
+            <div class="ui-rule mt-4 opacity-50"></div>
+        </header>
+
+        <div class="content flex flex-col gap-8">
+            <div class="info-tile">
+                <div class="info-tile__header">
+                    <span class="info-tile__index">01</span>
+                    <span class="info-tile__title">OVERVIEW</span>
+                </div>
+                <div class="info-tile__content">
+                    <div class="prose prose-invert max-w-none text-sm leading-relaxed text-zinc-300">
+                        <p>
+                            Content for Google Creative goes here.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { createGlitchWave } from "../scripts/scramble";
+
+    function setupGlitch() {
+        const headings = document.querySelectorAll<HTMLElement>("[data-glitch-text]");
+        
+        headings.forEach((heading) => {
+            if (heading.dataset.glitchBound === "true") return;
+            heading.dataset.glitchBound = "true";
+
+            const originalText = heading.textContent?.trim() || "";
+            
+            // Trigger once on load/reveal
+            createGlitchWave(heading, originalText, {
+                duration: 600,
+            });
+
+            // Re-trigger on hover for desktop
+            let stopHoverWave: (() => void) | null = null;
+            heading.addEventListener("mouseenter", () => {
+                if (stopHoverWave) stopHoverWave();
+                stopHoverWave = createGlitchWave(heading, originalText, {
+                    duration: 400,
+                });
+            });
+            heading.addEventListener("mouseleave", () => {
+                if (stopHoverWave) {
+                    stopHoverWave();
+                    stopHoverWave = null;
+                }
+            });
+        });
+    }
+
+    // Run on initial load and view transitions
+    setupGlitch();
+    document.addEventListener("astro:page-load", setupGlitch);
+</script>
+
+<style>
+    .page-container {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+    }
+
+    /* Shared UI Patterns */
+    .ui-rule {
+        height: 1px;
+        background-color: white;
+        width: 100%;
+    }
+
+    .info-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background-color: #000;
+        padding: 10px;
+
+        /* Broken Grid Borders */
+        background-image:
+            linear-gradient(to right, white, white),
+            linear-gradient(to bottom, white, white),
+            linear-gradient(to left, white, white),
+            linear-gradient(to top, white, white);
+
+        background-size:
+            calc(100% - 24px) 1px,
+            1px calc(100% - 24px),
+            calc(100% - 24px) 1px,
+            1px calc(100% - 24px);
+
+        background-position:
+            center top,
+            right center,
+            center bottom,
+            left center;
+
+        background-repeat: no-repeat;
+    }
+
+    .info-tile__header {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0.5rem;
+        margin-bottom: 0.5rem;
+        background-color: #000;
+        border-bottom: 1px solid rgba(255, 255, 255, 1);
+    }
+
+    .info-tile__index {
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: #71717a;
+    }
+
+    .info-tile__title {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+    }
+
+    .info-tile__content {
+        padding: 1rem 0.5rem;
+        flex: 1;
+    }
+</style>
